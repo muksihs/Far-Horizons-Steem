@@ -1,0 +1,20 @@
+rootProject.name = 'Far-Horizons-Steem'
+
+include (":steemj-core")
+project(":steemj-core").projectDir=new File("../steem-java-api-wrapper/core");
+
+String[] p = []
+/*
+ * Dynamically locate loosely coupled project dependencies.
+ */
+p.each { s->
+	include (":"+s);
+	boolean found=false;
+	File f;
+	f = new File(settingsDir,"../"+s); //preferred is side-by-side
+	found = new File(f, "build.gradle").exists();
+	if (!found) {
+		throw new RuntimeException("=== MISSING PROJECT: '"+s+"'");
+	}
+	project(":"+s).projectDir=f
+}
