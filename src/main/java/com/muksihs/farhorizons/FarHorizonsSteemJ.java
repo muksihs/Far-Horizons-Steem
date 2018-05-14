@@ -9,5 +9,5 @@ public class FarHorizonsSteemJ extends SteemJ {
 	public FarHorizonsSteemJ() throws SteemCommunicationException, SteemResponseException {
 		super();
 	}
-
+	
 }
