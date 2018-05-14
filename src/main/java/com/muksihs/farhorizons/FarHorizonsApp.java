@@ -93,7 +93,7 @@ public class FarHorizonsApp implements Runnable {
 	private String accountName;
 
 	private final String[] args;
-	private SteemJ steemJ;
+	private FarHorizonsSteemJ steemJ;
 	private AccountName account;
 	private ObjectMapper json;
 
@@ -170,7 +170,7 @@ public class FarHorizonsApp implements Runnable {
 			privateKeys.add(new ImmutablePair<>(PrivateKeyType.POSTING, this.postingKey));
 		}
 		myConfig.getPrivateKeyStorage().addAccount(myConfig.getDefaultAccount(), privateKeys);
-		steemJ = new SteemJ();
+		steemJ = new FarHorizonsSteemJ();
 	}
 
 	private void waitIfLowBandwidth() {
