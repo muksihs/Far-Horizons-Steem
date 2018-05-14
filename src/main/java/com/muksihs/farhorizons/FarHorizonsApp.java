@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -452,29 +453,65 @@ public class FarHorizonsApp implements Runnable {
 			}
 			Set<String> votingPlayers = new HashSet<>();
 			List<VoteState> votes = discussion.getActiveVotes();
+			Map<String, BigDecimal> votingShares=new HashMap<>();
 			for (VoteState vote : votes) {
 				GregorianCalendar deadline = newTurnDeadline(discussion.getCreated().getDateTimeAsDate());
 				Date voteWhen = vote.getTime().getDateTimeAsDate();
+				String name = vote.getVoter().getName();
 				if (voteWhen.after(deadline.getTime())) {
-					System.err.println("Ignoring late vote: " + vote.getVoter().getName());
+					System.err.println("Ignoring late vote: " + name);
 					continue;
 				}
-				votingPlayers.add(vote.getVoter().getName());
+				BigInteger rshares = vote.getRshares();
+				if (rshares.compareTo(BigInteger.ZERO) <= 0) {
+					//skip down votes and zero votes - not eligible for payouts
+					continue;
+				}
+				votingPlayers.add(name);
+				votingShares.put(name, new BigDecimal(rshares));
 			}
+			
 			registeredPlayers.retainAll(votingPlayers);
 			System.out.println("Have " + registeredPlayers.size() + " voting players in reward pool.");
+			//only use rshares from registered voting players for calculations
+			BigDecimal rsharesDivisor=BigDecimal.ZERO;
+			for (String player: votingPlayers) {
+				if (!votingShares.containsKey(player)) {
+					//shouldn't happen...
+					continue;
+				}
+				rsharesDivisor = rsharesDivisor.add(votingShares.get(player));
+			}
+			//convert player rshares into payout percents
+			for (String player: votingPlayers) {
+				if (!votingShares.containsKey(player)) {
+					//shouldn't happen...
+					continue;
+				}
+				BigDecimal weightPercent = votingShares.get(player).divide(rsharesDivisor, 8, RoundingMode.DOWN);
+				votingShares.put(player, weightPercent);
+			}
+			Map<String, BigDecimal> payouts = new HashMap<>();
+			BigDecimal pool = BigDecimal.ZERO;
+			for (String player: votingPlayers) {
+				BigDecimal payout = votingShares.get(player).multiply(payoutPool).setScale(3, RoundingMode.DOWN);
+				payouts.put(player, payout);
+				pool=pool.add(payout);
+			}
 			int payeeCount = registeredPlayers.size();
-			BigDecimal divisor = BigDecimal.valueOf(payeeCount);
-			BigDecimal payout = payoutPool.divide(divisor, 3, RoundingMode.DOWN);
-			BigDecimal pool = payout.multiply(divisor).setScale(3, RoundingMode.DOWN);
 			System.out.println(" - Pool size: " + pool.toPlainString() + " SBD");
-			System.out.println(" - Per player reward: " + payout.toPlainString() + " SBD");
-			if (payout.compareTo(BigDecimal.ZERO) == 0) {
+			System.out.println(" - Per player rewards: ");
+			for (String player: votingPlayers) {
+				BigDecimal payout = payouts.get(player);
+				System.out.println("  "+player+" = "+payout.toPlainString()+" SBD");
+			}
+			if (pool.compareTo(BigDecimal.ZERO) <= 0) {
 				FileUtils.touch(semaphore);
 				continue;
 			}
 			System.out.println(" - Distributing rewards.");
 			for (String player : registeredPlayers) {
+				BigDecimal payout = payouts.get(player);
 				AccountName to = new AccountName(player);
 				AssetSymbolType symbol = AssetSymbolType.SBD;
 				Asset amount = new Asset(payout.movePointRight(payout.scale()).longValue(), symbol);
@@ -495,13 +532,13 @@ public class FarHorizonsApp implements Runnable {
 				}
 			}
 			System.out.println(" - Posting reward notification.");
-			doPostRewardNotification(gameDir, aro.getPermlink().getLink(), turn, registeredPlayers, payout, pool);
+			doPostRewardNotification(gameDir, aro.getPermlink().getLink(), turn, registeredPlayers, payouts, pool);
 			FileUtils.touch(semaphore);
 		}
 	}
 
 	private void doPostRewardNotification(File gameDir, String payfromlink, String turn, Set<String> payees,
-			BigDecimal payout, BigDecimal pool)
+			Map<String, BigDecimal> payouts, BigDecimal pool)
 			throws IOException, InterruptedException, SteemCommunicationException, SteemResponseException {
 
 		String title = generatePayoutTitle(gameDir, pool, turn);
@@ -511,7 +548,7 @@ public class FarHorizonsApp implements Runnable {
 			System.out.println(" - Already posted: " + maybeAlready.getTitle());
 			return;
 		}
-		String payoutHtml = generateAndSavePayoutResultsHtml(gameDir, turn, payfromlink, payees, payout);
+		String payoutHtml = generateAndSavePayoutResultsHtml(gameDir, turn, payfromlink, payees, payouts);
 		/*
 		 * do NOT use game id in these tags, it will confuse the game client!
 		 */
@@ -1515,7 +1552,7 @@ public class FarHorizonsApp implements Runnable {
 	}
 
 	private String generateAndSavePayoutResultsHtml(File gameDir, String turn, String permlink, Set<String> payees,
-			BigDecimal payout) throws IOException, InterruptedException {
+			Map<String, BigDecimal> payouts) throws IOException, InterruptedException {
 		File htmlFile = new File(gameDir, "reports/_steem-payout-" + permlink + ".html");
 		if (htmlFile.exists()) {
 			return FileUtils.readFileToString(htmlFile, StandardCharsets.UTF_8);
@@ -1542,9 +1579,17 @@ public class FarHorizonsApp implements Runnable {
 			turnResults.append(" ");
 		}
 		turnResults.append("</p>");
-		turnResults.append("<p>Each player received: ");
-		turnResults.append(payout.toPlainString());
-		turnResults.append(" SBD.</p>");
+		turnResults.append("<ul>Player payouts: ");
+		for (String player : payees) {
+			turnResults.append("<li>");
+			BigDecimal payout = payouts.get(player);
+			turnResults.append("@");
+			turnResults.append(StringEscapeUtils.escapeHtml4(player));
+			turnResults.append(": ");
+			turnResults.append(payout.toPlainString());
+			turnResults.append(" SBD.</li>");
+		}
+		turnResults.append("</ul>");
 		turnResults.append("<h3>Attention Players</h3>");
 		turnResults.append("<p>");
 		turnResults.append("<strong>Reminder</strong>: ");
@@ -1552,7 +1597,7 @@ public class FarHorizonsApp implements Runnable {
 		turnResults.append(" you must <em>both</em> up vote the paying turn post and submit your game orders");
 		turnResults.append(" before the deadline.");
 		turnResults.append(" The SBD participation pool is calculated on a per turn basis");
-		turnResults.append(" <em>after</em> each payout is received.");
+		turnResults.append(" <em>after</em> each payout is received. Rewards are directly proportional to your vote's value!");
 		turnResults.append(" No votes means no payouts means no SBD!");
 		turnResults.append("</p>");
 
