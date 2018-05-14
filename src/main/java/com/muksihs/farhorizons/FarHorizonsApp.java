@@ -453,7 +453,7 @@ public class FarHorizonsApp implements Runnable {
 			}
 			Set<String> votingPlayers = new HashSet<>();
 			List<VoteState> votes = discussion.getActiveVotes();
-			Map<String, BigDecimal> votingShares=new HashMap<>();
+			Map<String, BigDecimal> votingShares = new HashMap<>();
 			for (VoteState vote : votes) {
 				GregorianCalendar deadline = newTurnDeadline(discussion.getCreated().getDateTimeAsDate());
 				Date voteWhen = vote.getTime().getDateTimeAsDate();
@@ -464,28 +464,33 @@ public class FarHorizonsApp implements Runnable {
 				}
 				BigInteger rshares = vote.getRshares();
 				if (rshares.compareTo(BigInteger.ZERO) <= 0) {
-					//skip down votes and zero votes - not eligible for payouts
+					// skip down votes and zero votes - not eligible for payouts
 					continue;
 				}
 				votingPlayers.add(name);
 				votingShares.put(name, new BigDecimal(rshares));
 			}
-			
+
 			registeredPlayers.retainAll(votingPlayers);
+			/*
+			 * make sure voting players is the same as registered players who voted to
+			 * prevent logic bugs
+			 */
+			votingPlayers = registeredPlayers;
 			System.out.println("Have " + registeredPlayers.size() + " voting players in reward pool.");
-			//only use rshares from registered voting players for calculations
-			BigDecimal rsharesDivisor=BigDecimal.ZERO;
-			for (String player: votingPlayers) {
+			// only use rshares from registered voting players for calculations
+			BigDecimal rsharesDivisor = BigDecimal.ZERO;
+			for (String player : registeredPlayers) {
 				if (!votingShares.containsKey(player)) {
-					//shouldn't happen...
+					// shouldn't happen...
 					continue;
 				}
 				rsharesDivisor = rsharesDivisor.add(votingShares.get(player));
 			}
-			//convert player rshares into payout percents
-			for (String player: votingPlayers) {
+			// convert player rshares into payout percents
+			for (String player : registeredPlayers) {
 				if (!votingShares.containsKey(player)) {
-					//shouldn't happen...
+					// shouldn't happen...
 					continue;
 				}
 				BigDecimal weightPercent = votingShares.get(player).divide(rsharesDivisor, 8, RoundingMode.DOWN);
@@ -493,17 +498,17 @@ public class FarHorizonsApp implements Runnable {
 			}
 			Map<String, BigDecimal> payouts = new HashMap<>();
 			BigDecimal pool = BigDecimal.ZERO;
-			for (String player: votingPlayers) {
+			for (String player : registeredPlayers) {
 				BigDecimal payout = votingShares.get(player).multiply(payoutPool).setScale(3, RoundingMode.DOWN);
 				payouts.put(player, payout);
-				pool=pool.add(payout);
+				pool = pool.add(payout);
 			}
 			int payeeCount = registeredPlayers.size();
 			System.out.println(" - Pool size: " + pool.toPlainString() + " SBD");
 			System.out.println(" - Per player rewards: ");
-			for (String player: votingPlayers) {
+			for (String player : registeredPlayers) {
 				BigDecimal payout = payouts.get(player);
-				System.out.println("  "+player+" = "+payout.toPlainString()+" SBD");
+				System.out.println("  " + player + " = " + payout.toPlainString() + " SBD");
 			}
 			if (pool.compareTo(BigDecimal.ZERO) <= 0) {
 				FileUtils.touch(semaphore);
@@ -1597,7 +1602,8 @@ public class FarHorizonsApp implements Runnable {
 		turnResults.append(" you must <em>both</em> up vote the paying turn post and submit your game orders");
 		turnResults.append(" before the deadline.");
 		turnResults.append(" The SBD participation pool is calculated on a per turn basis");
-		turnResults.append(" <em>after</em> each payout is received. Rewards are directly proportional to your vote's value!");
+		turnResults.append(
+				" <em>after</em> each payout is received. Rewards are directly proportional to your vote's value!");
 		turnResults.append(" No votes means no payouts means no SBD!");
 		turnResults.append("</p>");
 
