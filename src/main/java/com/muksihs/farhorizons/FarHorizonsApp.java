@@ -561,7 +561,7 @@ public class FarHorizonsApp implements Runnable {
 				}
 			}
 			System.out.println(" - Posting reward notification.");
-			doPostRewardNotification(gameDir, aro.getPermlink().getLink(), turn, registeredPlayers, payouts, pool);
+			doPostRewardNotification(gameDir, aro.getPermlink().getLink(), turn, activePlayers, payouts, pool);
 			FileUtils.touch(semaphore);
 		}
 	}
@@ -733,6 +733,10 @@ public class FarHorizonsApp implements Runnable {
 		List<CommentBlogEntry> entries = steemJ.getBlog(account, 0, (short) 100);
 		gameScan: for (CommentBlogEntry entry : entries) {
 			// if not by game master, SKIP
+			if (entry.getComment()==null) {
+				System.err.println("NULL Comment?");
+				continue;
+			}
 			if (!entry.getComment().getAuthor().equals(account)) {
 				// System.out.println("- SKIPPING POST BY : " +
 				// entry.getComment().getAuthor().getName());
@@ -1048,6 +1052,10 @@ public class FarHorizonsApp implements Runnable {
 		List<CommentBlogEntry> entries = steemJ.getBlog(account, 0, (short) 100);
 		Set<String> already = new HashSet<>();
 		newGameScan: for (CommentBlogEntry entry : entries) {
+			if (entry.getComment()==null) {
+				System.err.println("NULL Comment?");
+				continue;
+			}
 			// if not by game master, SKIP
 			if (!entry.getComment().getAuthor().equals(account)) {
 				// System.out.println("- SKIPPING POST BY : " +
