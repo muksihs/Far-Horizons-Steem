@@ -38,7 +38,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import blazing.chain.LZSEncoding;
-import eu.bittrade.libs.steemj.SteemJ;
 import eu.bittrade.libs.steemj.apis.database.models.state.Discussion;
 import eu.bittrade.libs.steemj.apis.follow.model.BlogEntry;
 import eu.bittrade.libs.steemj.apis.follow.model.CommentBlogEntry;
@@ -451,11 +450,36 @@ public class FarHorizonsApp implements Runnable {
 				registeredPlayers.add(activePlayer);
 				registeredSpecies.put(activePlayer, activeSpecies);
 			}
+			
+			GregorianCalendar deadline = newTurnDeadline(discussion.getCreated().getDateTimeAsDate());
+			//only pay players who actually played
+			List<Discussion> replies = steemJ.getContentReplies(account, discussion.getPermlink());
+			Set<String> activePlayers = new HashSet<>();
+			playersScan: for (Discussion reply : replies) {
+				String name = reply.getAuthor().getName();
+				String body = reply.getBody();
+				body = StringUtils.substringBetween(body, "<html>", "</html>");
+				if (body == null || body.trim().isEmpty()) {
+					continue playersScan;
+				}
+				body = LZSEncoding.decompressFromUTF16(basicUnescape(body));
+				if (body == null || !body.contains("START COMBAT")) {
+					continue playersScan;
+				}
+				Date playedWhen = reply.getCreated().getDateTimeAsDate();
+				if (playedWhen.after(deadline.getTime())) {
+					System.err.println("Ignoring late turn: " + name);
+					continue;
+				}
+				activePlayers.add(name);
+			}
+			activePlayers.retainAll(registeredPlayers);
+			registeredPlayers=null; //make sure we don't use wrong set with a NPE!
+			
 			Set<String> votingPlayers = new HashSet<>();
 			List<VoteState> votes = discussion.getActiveVotes();
 			Map<String, BigDecimal> votingShares = new HashMap<>();
 			for (VoteState vote : votes) {
-				GregorianCalendar deadline = newTurnDeadline(discussion.getCreated().getDateTimeAsDate());
 				Date voteWhen = vote.getTime().getDateTimeAsDate();
 				String name = vote.getVoter().getName();
 				if (voteWhen.after(deadline.getTime())) {
@@ -470,43 +494,43 @@ public class FarHorizonsApp implements Runnable {
 				votingPlayers.add(name);
 				votingShares.put(name, new BigDecimal(rshares));
 			}
-
-			registeredPlayers.retainAll(votingPlayers);
-			/*
-			 * make sure voting players is the same as registered players who voted to
-			 * prevent logic bugs
-			 */
-			votingPlayers = registeredPlayers;
-			System.out.println("Have " + registeredPlayers.size() + " voting players in reward pool.");
-			// only use rshares from registered voting players for calculations
+			
+			activePlayers.retainAll(votingPlayers); //only keep players who are voters
+			votingShares.keySet().retainAll(activePlayers);
+			votingPlayers=null; //make sure we don't use wrong set with a NPE!
+			
+			System.out.println("Have " + activePlayers.size() + " voting players in reward pool.");
+			// only use rshares from active voting players for calculations
 			BigDecimal rsharesDivisor = BigDecimal.ZERO;
-			for (String player : registeredPlayers) {
-				if (!votingShares.containsKey(player)) {
-					// shouldn't happen...
-					continue;
-				}
+			for (String player : activePlayers) {
 				rsharesDivisor = rsharesDivisor.add(votingShares.get(player));
 			}
+			// prevent negative payout math
+			boolean noRewards=false;
+			if (rsharesDivisor.compareTo(BigDecimal.ZERO)<=0) {
+				rsharesDivisor = BigDecimal.ZERO;
+				noRewards=true;
+			}
 			// convert player rshares into payout percents
-			for (String player : registeredPlayers) {
-				if (!votingShares.containsKey(player)) {
-					// shouldn't happen...
-					continue;
+			for (String player : activePlayers) {
+				BigDecimal weightPercent;
+				if (noRewards) {
+					weightPercent=BigDecimal.ZERO;
+				} else {
+					weightPercent = votingShares.get(player).divide(rsharesDivisor, 8, RoundingMode.DOWN);
 				}
-				BigDecimal weightPercent = votingShares.get(player).divide(rsharesDivisor, 8, RoundingMode.DOWN);
 				votingShares.put(player, weightPercent);
 			}
 			Map<String, BigDecimal> payouts = new HashMap<>();
 			BigDecimal pool = BigDecimal.ZERO;
-			for (String player : registeredPlayers) {
+			for (String player : activePlayers) {
 				BigDecimal payout = votingShares.get(player).multiply(payoutPool).setScale(3, RoundingMode.DOWN);
 				payouts.put(player, payout);
 				pool = pool.add(payout);
 			}
-			int payeeCount = registeredPlayers.size();
 			System.out.println(" - Pool size: " + pool.toPlainString() + " SBD");
 			System.out.println(" - Per player rewards: ");
-			for (String player : registeredPlayers) {
+			for (String player : activePlayers) {
 				BigDecimal payout = payouts.get(player);
 				System.out.println("  " + player + " = " + payout.toPlainString() + " SBD");
 			}
@@ -515,7 +539,7 @@ public class FarHorizonsApp implements Runnable {
 				continue;
 			}
 			System.out.println(" - Distributing rewards.");
-			for (String player : registeredPlayers) {
+			for (String player : activePlayers) {
 				BigDecimal payout = payouts.get(player);
 				AccountName to = new AccountName(player);
 				AssetSymbolType symbol = AssetSymbolType.SBD;
