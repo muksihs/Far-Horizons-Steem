@@ -550,7 +550,12 @@ public class FarHorizonsApp implements Runnable {
 					System.out.println(" - Already Paid: " + player);
 					continue;
 				}
-				System.out.println(" - Paying " + player + " " + payout.toPlainString() + " SBD.");
+				if (BigDecimal.ZERO.equals(payout)) {
+					System.out.println(" - " + player + " doesn't get a payout.");
+					continue;
+				} else {
+					System.out.println(" - Paying " + player + " " + payout.toPlainString() + " SBD.");
+				}
 				TransferOperation transfer = new TransferOperation(account, to, amount, memo);
 				try {
 					doSteemOps(transfer);
