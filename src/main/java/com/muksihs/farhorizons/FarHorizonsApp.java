@@ -550,7 +550,7 @@ public class FarHorizonsApp implements Runnable {
 					System.out.println(" - Already Paid: " + player);
 					continue;
 				}
-				if (BigDecimal.ZERO.equals(payout)) {
+				if (BigDecimal.ZERO.compareTo(payout)==0) {
 					System.out.println(" - " + player + " doesn't get a payout.");
 					continue;
 				} else {
