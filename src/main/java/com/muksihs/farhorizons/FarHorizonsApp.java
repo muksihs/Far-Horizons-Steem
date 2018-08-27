@@ -827,7 +827,7 @@ public class FarHorizonsApp implements Runnable {
 			} catch (NumberFormatException e) {
 				tn = 21;
 			}
-			float gameOverOdds = (float) (tn - 20) / 500f;
+			float gameOverOdds = (float) (tn - 20) / 1000f;
 			boolean isGameOver = (r.nextFloat() <= gameOverOdds) || isForceGameComplete;
 
 			if (playerInfo.size() == 0) {
