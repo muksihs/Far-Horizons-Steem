@@ -2100,7 +2100,7 @@ public class FarHorizonsApp implements Runnable {
 
 		gameComplete.append("</html>");
 		String gameCompleteHtml = gameComplete.toString();
-		FileUtils.write(new File(gameDir, "final-stats.html"), gameCompleteHtml, StandardCharsets.UTF_8);
+		FileUtils.write(new File(gameDir, "final-summary-stats.html"), gameCompleteHtml, StandardCharsets.UTF_8);
 		return gameCompleteHtml;
 	}
 
@@ -2108,6 +2108,7 @@ public class FarHorizonsApp implements Runnable {
 		List<String> stats = new ArrayList<>();
 		for (int spNo = 0; spNo < 100; spNo++) {
 			StringBuilder gameComplete = new StringBuilder();
+			gameComplete.append("<html>");
 			String sp = (spNo < 10 ? "0" : "") + spNo;
 			File report = new File(gameDir, "reports/sp" + sp + ".rpt.t" + tn);
 			if (!report.canRead()) {
@@ -2136,6 +2137,7 @@ public class FarHorizonsApp implements Runnable {
 			reportTxt = "<p><samp>" + reportTxt + "</samp></p></div>";
 
 			gameComplete.append(reportTxt);
+			gameComplete.append("</html>");
 			System.out.println("=== " + species);
 			stats.add(gameComplete.toString());
 		}
