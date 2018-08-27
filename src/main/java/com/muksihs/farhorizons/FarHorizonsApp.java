@@ -450,9 +450,9 @@ public class FarHorizonsApp implements Runnable {
 				registeredPlayers.add(activePlayer);
 				registeredSpecies.put(activePlayer, activeSpecies);
 			}
-			
+
 			GregorianCalendar deadline = newTurnDeadline(discussion.getCreated().getDateTimeAsDate());
-			//only pay players who actually played
+			// only pay players who actually played
 			List<Discussion> replies = steemJ.getContentReplies(account, discussion.getPermlink());
 			Set<String> activePlayers = new HashSet<>();
 			playersScan: for (Discussion reply : replies) {
@@ -474,8 +474,8 @@ public class FarHorizonsApp implements Runnable {
 				activePlayers.add(name);
 			}
 			activePlayers.retainAll(registeredPlayers);
-			registeredPlayers=null; //make sure we don't use wrong set with a NPE!
-			
+			registeredPlayers = null; // make sure we don't use wrong set with a NPE!
+
 			Set<String> votingPlayers = new HashSet<>();
 			List<VoteState> votes = discussion.getActiveVotes();
 			Map<String, BigDecimal> votingShares = new HashMap<>();
@@ -494,11 +494,11 @@ public class FarHorizonsApp implements Runnable {
 				votingPlayers.add(name);
 				votingShares.put(name, new BigDecimal(rshares));
 			}
-			
-			activePlayers.retainAll(votingPlayers); //only keep players who are voters
+
+			activePlayers.retainAll(votingPlayers); // only keep players who are voters
 			votingShares.keySet().retainAll(activePlayers);
-			votingPlayers=null; //make sure we don't use wrong set with a NPE!
-			
+			votingPlayers = null; // make sure we don't use wrong set with a NPE!
+
 			System.out.println("Have " + activePlayers.size() + " voting players in reward pool.");
 			// only use rshares from active voting players for calculations
 			BigDecimal rsharesDivisor = BigDecimal.ZERO;
@@ -506,16 +506,16 @@ public class FarHorizonsApp implements Runnable {
 				rsharesDivisor = rsharesDivisor.add(votingShares.get(player));
 			}
 			// prevent negative payout math
-			boolean noRewards=false;
-			if (rsharesDivisor.compareTo(BigDecimal.ZERO)<=0) {
+			boolean noRewards = false;
+			if (rsharesDivisor.compareTo(BigDecimal.ZERO) <= 0) {
 				rsharesDivisor = BigDecimal.ZERO;
-				noRewards=true;
+				noRewards = true;
 			}
 			// convert player rshares into payout percents
 			for (String player : activePlayers) {
 				BigDecimal weightPercent;
 				if (noRewards) {
-					weightPercent=BigDecimal.ZERO;
+					weightPercent = BigDecimal.ZERO;
 				} else {
 					weightPercent = votingShares.get(player).divide(rsharesDivisor, 8, RoundingMode.DOWN);
 				}
@@ -550,7 +550,7 @@ public class FarHorizonsApp implements Runnable {
 					System.out.println(" - Already Paid: " + player);
 					continue;
 				}
-				if (BigDecimal.ZERO.compareTo(payout)==0) {
+				if (BigDecimal.ZERO.compareTo(payout) == 0) {
 					System.out.println(" - " + player + " doesn't get a payout.");
 					continue;
 				} else {
@@ -738,13 +738,11 @@ public class FarHorizonsApp implements Runnable {
 		List<CommentBlogEntry> entries = steemJ.getBlog(account, 0, (short) 100);
 		gameScan: for (CommentBlogEntry entry : entries) {
 			// if not by game master, SKIP
-			if (entry.getComment()==null) {
+			if (entry.getComment() == null) {
 				System.err.println("NULL Comment?");
 				continue;
 			}
 			if (!entry.getComment().getAuthor().equals(account)) {
-				// System.out.println("- SKIPPING POST BY : " +
-				// entry.getComment().getAuthor().getName());
 				continue;
 			}
 
@@ -822,12 +820,19 @@ public class FarHorizonsApp implements Runnable {
 			}
 
 			boolean isForceGameComplete = new File(gameDir, SEM_FORCEGAMECOMPLETE).exists();
+			Random r = new Random();
+			int tn;
+			try {
+				tn = Integer.valueOf(getTurnNumber(gameDir));
+			} catch (NumberFormatException e) {
+				tn = 21;
+			}
+			float gameOverOdds = (float) (tn - 20) / 500f;
+			boolean isGameOver = (r.nextFloat() <= gameOverOdds) || isForceGameComplete;
 
 			if (playerInfo.size() == 0) {
 				System.out.println("No players have submitted orders yet..");
-				if (!isForceGameComplete) {
-					continue gameScan;
-				}
+				continue gameScan;
 			}
 
 			boolean allPlayersAccountedFor = true;
@@ -838,10 +843,10 @@ public class FarHorizonsApp implements Runnable {
 					break;
 				}
 			}
-
+			
 			Date posted = entry.getComment().getCreated().getDateTimeAsDate();
 
-			if (!allPlayersAccountedFor && !isNewTurnDeadlineOver(posted) && !isForceGameComplete) {
+			if (!allPlayersAccountedFor && !isNewTurnDeadlineOver(posted)) {
 				GregorianCalendar cal = newTurnDeadline(posted);
 				DateFormat df = DateFormat.getDateTimeInstance();
 				df.setTimeZone(EST5EDT);
@@ -852,6 +857,8 @@ public class FarHorizonsApp implements Runnable {
 						+ closesUtc + " UTC)");
 				continue gameScan;
 			}
+
+
 			if (!allPlayersAccountedFor) {
 				System.out.println("Response period closed. Running game.");
 				FileUtils.write(new File(gameDir, "noorders.txt"), "Response period closed. Running game.\n",
@@ -886,37 +893,26 @@ public class FarHorizonsApp implements Runnable {
 				xpb.redirectOutput(new File(logDir, "_" + cmd + ".log.txt"));
 				xpb.redirectErrorStream(true);
 				xpb.directory(gameDir);
-				if (!isForceGameComplete) {
-					xprocess = xpb.start();
-					xprocess.waitFor();
-					if (xprocess.exitValue() != 0) {
-						throw new RuntimeException("Command " + cmd + " failed.");
-					}
+				xprocess = xpb.start();
+				xprocess.waitFor();
+				if (xprocess.exitValue() != 0) {
+					throw new RuntimeException("Command " + cmd + " failed.");
 				}
 			}
 			cleanup(gameDir);
-			if (!isForceGameComplete) {
+			if (isGameOver) {
+				String gameCompletePermlink = postGameComplete(gameDir);
+				for (String player : playerPermlinks.keySet()) {
+					Permlink playerPermlink = playerPermlinks.get(player);
+					markGameComplete(player, playerPermlink, gameCompletePermlink, tags);
+				}
+				FileUtils.touch(new File(gameDir, SEM_GAMECOMPLETE));
+			} else {
 				String newTurnPermlink = postTurnResults(gameDir);
 				for (String player : playerPermlinks.keySet()) {
 					Permlink playerPermlink = playerPermlinks.get(player);
 					markTurnComplete(player, playerPermlink, newTurnPermlink, tags);
 				}
-			}
-			try {
-				int tn = Integer.valueOf(getTurnNumber(gameDir));
-				if (isForceGameComplete || tn > 20) {
-					float gameOverOdds = (float) (tn - 20) / 500f;
-					Random r = new Random();
-					if (isForceGameComplete || r.nextFloat() <= gameOverOdds) {
-						String gameCompletePermlink = postGameComplete(gameDir);
-						FileUtils.touch(new File(gameDir, SEM_GAMECOMPLETE));
-						for (String player : playerPermlinks.keySet()) {
-							Permlink playerPermlink = playerPermlinks.get(player);
-							markGameComplete(player, playerPermlink, gameCompletePermlink, tags);
-						}
-					}
-				}
-			} catch (NumberFormatException e) {
 			}
 		}
 	}
@@ -1057,7 +1053,7 @@ public class FarHorizonsApp implements Runnable {
 		List<CommentBlogEntry> entries = steemJ.getBlog(account, 0, (short) 100);
 		Set<String> already = new HashSet<>();
 		newGameScan: for (CommentBlogEntry entry : entries) {
-			if (entry.getComment()==null) {
+			if (entry.getComment() == null) {
 				System.err.println("NULL Comment?");
 				continue;
 			}
@@ -1977,8 +1973,39 @@ public class FarHorizonsApp implements Runnable {
 	}
 
 	/*
-	 * Post final stats to blog.
+	 * gameComplete.append("<h1>FINAL SPECIES GAME DETAILS</h1>");
+	 * 
 	 */
+
+	private void postGameCompleteDetails(AccountName parentAuthor, Permlink parentPermlink, File gameDir, String tn,
+			String[] tags) throws IOException {
+		List<String> stats = getUncompressedSpeciesStatus(gameDir, tn);
+		for (String stat : stats) {
+			doPost: while (true) {
+				waitIfLowBandwidth();
+				sleep(25l * 1000l);// 25 seconds
+				try {
+					steemJ.createComment(parentAuthor, parentPermlink, stat, tags);
+					break doPost;
+				} catch (SteemCommunicationException | SteemResponseException | SteemInvalidTransactionException e) {
+					System.err.println("Posting error. Retry in 25 seconds. [" + parentPermlink.getLink() + "]");
+				}
+			}
+		}
+	}
+
+	/**
+	 * Post final stats to blog.
+	 * 
+	 * @param gameDir
+	 * @return
+	 * @throws IOException
+	 * @throws InterruptedException
+	 * @throws SteemCommunicationException
+	 * @throws SteemResponseException
+	 * @throws SteemInvalidTransactionException
+	 */
+
 	private String postGameComplete(File gameDir) throws IOException, InterruptedException, SteemCommunicationException,
 			SteemResponseException, SteemInvalidTransactionException {
 
@@ -1992,13 +2019,17 @@ public class FarHorizonsApp implements Runnable {
 		tags[2] = "games";
 		tags[3] = "freesbd";
 		tags[4] = "contest";
-		while (true) {
+		Permlink parentPermlink;
+		AccountName parentAuthor;
+		doPost: while (true) {
 			waitIfLowBandwidth();
 			try {
 				System.out.println("POSTING: " + title + " ("
 						+ gameCompleteResultsHtml.getBytes(StandardCharsets.UTF_8).length + " bytes)");
 				CommentOperation posted = steemJ.createPost(title, gameCompleteResultsHtml, tags);
-				return posted.getPermlink().getLink();
+				parentPermlink = posted.getPermlink();
+				parentAuthor = posted.getAuthor();
+				break doPost;
 			} catch (Exception e) {
 				System.err.println("Posting error. Sleeping 5 minutes.");
 				if (e.getMessage().contains("STEEMIT_MIN_ROOT_COMMENT_INTERVAL")) {
@@ -2009,6 +2040,8 @@ public class FarHorizonsApp implements Runnable {
 				sleep(5l * 60l * 1000l);
 			}
 		}
+		postGameCompleteDetails(parentAuthor, parentPermlink, gameDir, tn, tags);
+		return parentPermlink.getLink();
 	}
 
 	private String gameCompleteResultsHtml(File gameDir) throws IOException, InterruptedException {
@@ -2059,8 +2092,6 @@ public class FarHorizonsApp implements Runnable {
 
 		gameComplete.append("<p>Hopefully everyone had fun playing the game!");
 		gameComplete.append(" A new game signup will be posted soon!</p>");
-		gameComplete.append("<h1>FINAL SPECIES GAME DETAILS</h1>");
-		appendUncompressedSpeciesStatus(gameComplete, gameDir, tn);
 
 		gameComplete.append("<h1>Summary Stats</h1>");
 		gameComplete.append("<div>");
@@ -2073,9 +2104,10 @@ public class FarHorizonsApp implements Runnable {
 		return gameCompleteHtml;
 	}
 
-	private void appendUncompressedSpeciesStatus(StringBuilder gameComplete, File gameDir, String tn)
-			throws IOException {
+	private List<String> getUncompressedSpeciesStatus(File gameDir, String tn) throws IOException {
+		List<String> stats = new ArrayList<>();
 		for (int spNo = 0; spNo < 100; spNo++) {
+			StringBuilder gameComplete = new StringBuilder();
 			String sp = (spNo < 10 ? "0" : "") + spNo;
 			File report = new File(gameDir, "reports/sp" + sp + ".rpt.t" + tn);
 			if (!report.canRead()) {
@@ -2105,7 +2137,9 @@ public class FarHorizonsApp implements Runnable {
 
 			gameComplete.append(reportTxt);
 			System.out.println("=== " + species);
+			stats.add(gameComplete.toString());
 		}
+		return stats;
 	}
 
 	/*
