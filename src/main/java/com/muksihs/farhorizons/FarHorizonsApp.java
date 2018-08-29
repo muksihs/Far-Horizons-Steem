@@ -2230,7 +2230,7 @@ public class FarHorizonsApp implements Runnable {
 	}
 
 	private String generateTurnTitle(File gameDir, String tn) {
-		String title = "Far Horizons Steem - Start of Turn " + tn + " - Game "
+		String title = "Far Horizons Steem - Start of Turn " + tn + " - For Game "
 				+ gameDir.getName().replaceAll("[^\\d]", "");
 		return title;
 	}
