@@ -1430,9 +1430,9 @@ public class FarHorizonsApp implements Runnable {
 	private String generateAndSaveTurnResultsHtml(File gameDir) throws IOException, InterruptedException {
 		String tn = getTurnNumber(gameDir);
 		File htmlFile = new File(gameDir, "reports/_steem-post-" + tn + ".html");
-		if (htmlFile.exists()) {
-			return FileUtils.readFileToString(htmlFile, StandardCharsets.UTF_8);
-		}
+//		if (htmlFile.exists()) {
+//			return FileUtils.readFileToString(htmlFile, StandardCharsets.UTF_8);
+//		}
 		GregorianCalendar cal = new GregorianCalendar(EST5EDT);
 		cal.add(GregorianCalendar.DAY_OF_YEAR, +3);
 		int minute = cal.get(GregorianCalendar.MINUTE);
