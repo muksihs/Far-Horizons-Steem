@@ -438,10 +438,24 @@ public class FarHorizonsApp implements Runnable {
 			}
 			File steemDir = new File(gameDir, "steem-data");
 			steemDir.mkdirs();
-			BigDecimal payoutPool = BigDecimal.valueOf(aro.getSbdPayout().getAmount(),
+			
+			BigDecimal sbdPayout = BigDecimal.valueOf(aro.getSbdPayout().getAmount(),
 					aro.getSbdPayout().getPrecision());
+			BigDecimal stmPayout = BigDecimal.valueOf(aro.getSteemPayout().getAmount(),
+					aro.getSteemPayout().getPrecision());
+			
+			boolean isSbdPayout = (sbdPayout.compareTo(stmPayout)>0);
+			
+			BigDecimal payoutPool;
+			if (isSbdPayout) {
+				payoutPool = sbdPayout;
+			} else {
+				payoutPool = stmPayout;
+			}
+			
 			System.out.println("LINK: " + aro.getPermlink().getLink());
-			System.out.println("PAYOUT: " + payoutPool.toPlainString() + " SBD");
+			String currency = isSbdPayout?" SBD":" STEEM";
+			System.out.println("PAYOUT: " + payoutPool.toPlainString() + currency);
 			List<String> playerList = FileUtils.readLines(new File(gameDir, "_players.tab"),
 					StandardCharsets.UTF_8.name());
 			Set<String> registeredPlayers = new HashSet<>();
@@ -533,11 +547,11 @@ public class FarHorizonsApp implements Runnable {
 				payouts.put(player, payout);
 				pool = pool.add(payout);
 			}
-			System.out.println(" - Pool size: " + pool.toPlainString() + " SBD");
+			System.out.println(" - Pool size: " + pool.toPlainString() + currency);
 			System.out.println(" - Per player rewards: ");
 			for (String player : activePlayers) {
 				BigDecimal payout = payouts.get(player);
-				System.out.println("  " + player + " = " + payout.toPlainString() + " SBD");
+				System.out.println("  " + player + " = " + payout.toPlainString() + currency);
 			}
 			if (pool.compareTo(BigDecimal.ZERO) <= 0) {
 				FileUtils.touch(semaphore);
@@ -547,7 +561,12 @@ public class FarHorizonsApp implements Runnable {
 			for (String player : activePlayers) {
 				BigDecimal payout = payouts.get(player);
 				AccountName to = new AccountName(player);
-				AssetSymbolType symbol = AssetSymbolType.SBD;
+				AssetSymbolType symbol;
+				if (isSbdPayout) {
+					symbol = AssetSymbolType.SBD;
+				} else {
+					symbol = AssetSymbolType.STEEM;
+				}
 				Asset amount = new Asset(payout.movePointRight(payout.scale()).longValue(), symbol);
 				String memo = "Far Horizons Payout: " + discussion.getPermlink().getLink();
 				if (alreadyPaid.contains(player + "|" + memo)
@@ -559,7 +578,7 @@ public class FarHorizonsApp implements Runnable {
 					System.out.println(" - " + player + " doesn't get a payout.");
 					continue;
 				} else {
-					System.out.println(" - Paying " + player + " " + payout.toPlainString() + " SBD.");
+					System.out.println(" - Paying " + player + " " + payout.toPlainString() + currency);
 				}
 				TransferOperation transfer = new TransferOperation(account, to, amount, memo);
 				try {
@@ -571,13 +590,13 @@ public class FarHorizonsApp implements Runnable {
 				}
 			}
 			System.out.println(" - Posting reward notification.");
-			doPostRewardNotification(gameDir, aro.getPermlink().getLink(), turn, activePlayers, payouts, pool);
+			doPostRewardNotification(gameDir, aro.getPermlink().getLink(), turn, activePlayers, payouts, pool, isSbdPayout);
 			FileUtils.touch(semaphore);
 		}
 	}
 
 	private void doPostRewardNotification(File gameDir, String payfromlink, String turn, Set<String> payees,
-			Map<String, BigDecimal> payouts, BigDecimal pool)
+			Map<String, BigDecimal> payouts, BigDecimal pool, boolean isSbdPayout)
 			throws IOException, InterruptedException, SteemCommunicationException, SteemResponseException {
 
 		String title = generatePayoutTitle(gameDir, pool, turn);
@@ -587,7 +606,7 @@ public class FarHorizonsApp implements Runnable {
 			System.out.println(" - Already posted: " + maybeAlready.getTitle());
 			return;
 		}
-		String payoutHtml = generateAndSavePayoutResultsHtml(gameDir, turn, payfromlink, payees, payouts);
+		String payoutHtml = generateAndSavePayoutResultsHtml(gameDir, turn, payfromlink, payees, payouts, isSbdPayout);
 		/*
 		 * do NOT use game id in these tags, it will confuse the game client!
 		 */
@@ -1483,15 +1502,15 @@ public class FarHorizonsApp implements Runnable {
 		turnResults.append("</p>");
 		turnResults.append("<p>");
 		turnResults.append("<strong>Reminder</strong>: ");
-		turnResults.append("To be in the SBD participation reward pool,");
+		turnResults.append("To be in the participation reward pool,");
 		turnResults.append(" you must <em>both</em> up vote this post and submit your game orders");
 		turnResults.append(" before the deadline.");
-		turnResults.append(" The SBD participation pool is calculated on a per turn basis");
+		turnResults.append(" The participation pool is calculated on a per turn basis");
 		turnResults.append(" <em>after</em> each payout is received.");
-		turnResults.append(" No votes means no payouts means no SBD!");
+		turnResults.append(" No votes means no payouts means no rewards!");
 		turnResults.append("</p>");
 
-		turnResults.append("<h3>Want to join in to play and earn SBD?</h3>");
+		turnResults.append("<h3>Want to join in to play and earn rewards?</h3>");
 		turnResults.append("<p>");
 		turnResults.append("Reply to this post asking the gamemaster to start a new game.");
 		turnResults.append(" <em>Players can only join at the start of a new game.</em>");
@@ -1594,7 +1613,7 @@ public class FarHorizonsApp implements Runnable {
 	}
 
 	private String generateAndSavePayoutResultsHtml(File gameDir, String turn, String permlink, Set<String> payees,
-			Map<String, BigDecimal> payouts) throws IOException, InterruptedException {
+			Map<String, BigDecimal> payouts, boolean isSbdPayout) throws IOException, InterruptedException {
 		File htmlFile = new File(gameDir, "reports/_steem-payout-" + permlink + ".html");
 		if (htmlFile.exists()) {
 			return FileUtils.readFileToString(htmlFile, StandardCharsets.UTF_8);
@@ -1605,6 +1624,7 @@ public class FarHorizonsApp implements Runnable {
 		} else {
 			turn = " - For Turn " + turn;
 		}
+		String currency = isSbdPayout?" SBD":" STEEM";
 		StringBuilder turnResults = new StringBuilder();
 		turnResults.append("<html charset='UTF-8'>");
 		turnResults.append("<div>");
@@ -1629,22 +1649,25 @@ public class FarHorizonsApp implements Runnable {
 			turnResults.append(StringEscapeUtils.escapeHtml4(player));
 			turnResults.append(": ");
 			turnResults.append(payout.toPlainString());
-			turnResults.append(" SBD.</li>");
+			turnResults.append(currency);
+			turnResults.append(".</li>");
 		}
 		turnResults.append("</ul>");
 		turnResults.append("<h3>Attention Players</h3>");
 		turnResults.append("<p>");
 		turnResults.append("<strong>Reminder</strong>: ");
-		turnResults.append("To be in the SBD participation reward pool,");
+		turnResults.append("To be in the");
+		turnResults.append(currency);
+		turnResults.append(" participation reward pool,");
 		turnResults.append(" you must <em>both</em> up vote the paying turn post and submit your game orders");
 		turnResults.append(" before the deadline.");
-		turnResults.append(" The SBD participation pool is calculated on a per turn basis");
+		turnResults.append(" The participation pool is calculated on a per turn basis");
 		turnResults.append(
 				" <em>after</em> each payout is received. Rewards are directly proportional to your vote's value!");
-		turnResults.append(" No votes means no payouts means no SBD!");
+		turnResults.append(" No votes means no payouts!");
 		turnResults.append("</p>");
 
-		turnResults.append("<h3>Want to join in to play and earn SBD?</h3>");
+		turnResults.append("<h3>Want to join in to play and earn rewards?</h3>");
 		turnResults.append("<p>");
 		turnResults.append("Reply to this post asking the gamemaster to start a new game.");
 		turnResults.append(" <em>Players can only join at the start of a new game.</em>");
@@ -1670,7 +1693,7 @@ public class FarHorizonsApp implements Runnable {
 			turn = "For turn " + turn;
 		}
 		return "Far Horizons Steem - PAYOUT REPORT - " + gameDir.getName() + " " + turn + " - " + pool.toPlainString()
-				+ " SBD PLAYER POOL";
+				+ " PLAYER POOL REWARD";
 	}
 
 	public static class NewGameInviteInfo {
@@ -1858,14 +1881,14 @@ public class FarHorizonsApp implements Runnable {
 
 		gameInvite.append("<p>The game will play for at least 20 turns.");
 		gameInvite.append(" When the game ends will be determined randomly.</p>");
-		gameInvite.append("<p>If a turn's announce post receives enough up votes for an SBD payout,");
-		gameInvite.append(" and the SBD payout is large enough for the math to work,");
-		gameInvite.append(" the SBD payout will be divided");
-		gameInvite.append(" up between the players and gamemaster.");
+		gameInvite.append("<p>If a turn's announce post receives enough up votes for a payout,");
+		gameInvite.append(" and the payout is large enough for the math to work,");
+		gameInvite.append(" the payout will be divided");
+		gameInvite.append(" up between the players with the remainder assigned to the gamemaster.");
 		gameInvite.append(" <em>You can think of it as a player participation pool.</em></p>");
 
 		gameInvite
-				.append("<h3>Is the game already started and you want to join in to play and possibly earn SBD?</h3>");
+				.append("<h3>Is the game already started and you want to join in to play and possibly earn rewards?</h3>");
 		gameInvite.append("<p>");
 		gameInvite.append("Reply to this post asking the gamemaster to start a new game.");
 		gameInvite.append(" <em>Players can only join at the start of a new game.</em>");
@@ -2021,7 +2044,7 @@ public class FarHorizonsApp implements Runnable {
 		tags[0] = "far-horizons";
 		tags[1] = gameDir.getName();
 		tags[2] = "games";
-		tags[3] = "freesbd";
+		tags[3] = "freerewards";
 		tags[4] = "contest";
 		Permlink parentPermlink;
 		AccountName parentAuthor;
@@ -2176,7 +2199,7 @@ public class FarHorizonsApp implements Runnable {
 		tags[0] = "far-horizons";
 		tags[1] = gameDir.getName();
 		tags[2] = "games";
-		tags[3] = "freesbd";
+		tags[3] = "freerewards";
 		tags[4] = "contest";
 		while (true) {
 			try {
