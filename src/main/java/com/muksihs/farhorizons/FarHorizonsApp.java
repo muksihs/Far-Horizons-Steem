@@ -1657,7 +1657,6 @@ public class FarHorizonsApp implements Runnable {
 		turnResults.append("<p>");
 		turnResults.append("<strong>Reminder</strong>: ");
 		turnResults.append("To be in the");
-		turnResults.append(currency);
 		turnResults.append(" participation reward pool,");
 		turnResults.append(" you must <em>both</em> up vote the paying turn post and submit your game orders");
 		turnResults.append(" before the deadline.");
