@@ -26,6 +26,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -65,6 +66,10 @@ import models.NewGameInfo;
 import steem.models.CommentMetadata;
 
 public class FarHorizonsApp implements Runnable {
+	
+	private static final String SECTION_MARKER_START = "* * *";
+
+	private static final int MAX_COMMENT_SIZE=16*1024;
 
 	private static final String SEM_GAMECOMPLETE = "_game-complete";
 	private static final String SEM_FORCEGAMECOMPLETE = "_force-game-complete";
@@ -827,7 +832,7 @@ public class FarHorizonsApp implements Runnable {
 			} catch (NumberFormatException e) {
 				tn = 21;
 			}
-			float gameOverOdds = (float) (tn - 20) / 1000f;
+			float gameOverOdds = (float) (tn - 20) / 2000f;
 			boolean isGameOver = (r.nextFloat() <= gameOverOdds) || isForceGameComplete;
 
 			if (playerInfo.size() == 0) {
@@ -843,7 +848,7 @@ public class FarHorizonsApp implements Runnable {
 					break;
 				}
 			}
-			
+
 			Date posted = entry.getComment().getCreated().getDateTimeAsDate();
 
 			if (!allPlayersAccountedFor && !isNewTurnDeadlineOver(posted)) {
@@ -857,7 +862,6 @@ public class FarHorizonsApp implements Runnable {
 						+ closesUtc + " UTC)");
 				continue gameScan;
 			}
-
 
 			if (!allPlayersAccountedFor) {
 				System.out.println("Response period closed. Running game.");
@@ -1365,10 +1369,10 @@ public class FarHorizonsApp implements Runnable {
 			waitIfLowBandwidth();
 			sleep(25l * 1000l);// 25 seconds
 			try {
-				steemJ.createComment(new AccountName(parentAuthor), parentPermlink,
-						"<html><h3>GAME COMPLETE!</h3>PLAYER STATS:" //
-								+ " [<a href='https://steemit.com/far-horizons/@" + accountName + "/" + gameCompleteLink
-								+ "' target='_blank'>" + basicEscape(gameCompleteLink) + "</a>]</html>",
+				String gameCompleteHtml = "<html><h3>GAME COMPLETE!</h3>PLAYER STATS:" //
+						+ " [<a href='https://steemit.com/far-horizons/@" + accountName + "/" + gameCompleteLink
+						+ "' target='_blank'>" + basicEscape(gameCompleteLink) + "</a>]</html>";
+				steemJ.createComment(new AccountName(parentAuthor), parentPermlink, gameCompleteHtml,
 						tags.toArray(new String[0]));
 				System.out.println("GAME COMPLETE! [" + parentPermlink.getLink() + "]");
 				return;
@@ -1553,7 +1557,7 @@ public class FarHorizonsApp implements Runnable {
 				if (tmpy.contains("Production capacity this turn")) {
 					continue;
 				}
-				if (tmpy.contains("* * *")) {
+				if (tmpy.contains(SECTION_MARKER_START)) {
 					break;
 				}
 				if (tmpy.contains("=")) {
@@ -2107,8 +2111,6 @@ public class FarHorizonsApp implements Runnable {
 	private List<String> getUncompressedSpeciesStatus(File gameDir, String tn) throws IOException {
 		List<String> stats = new ArrayList<>();
 		for (int spNo = 0; spNo < 100; spNo++) {
-			StringBuilder gameComplete = new StringBuilder();
-			gameComplete.append("<html>");
 			String sp = (spNo < 10 ? "0" : "") + spNo;
 			File report = new File(gameDir, "reports/sp" + sp + ".rpt.t" + tn);
 			if (!report.canRead()) {
@@ -2125,21 +2127,37 @@ public class FarHorizonsApp implements Runnable {
 			}
 			String species = StringUtils.substringBefore(reportTxt, "\n");
 			reportTxt = StringUtils.substringAfter(reportTxt, "\n").trim();
-			reportTxt = basicEscape(reportTxt);
-			reportTxt = reportTxt.replace("\t", "    ");
-			reportTxt = reportTxt.replaceAll(" ?(\\* )+\\*?", "<hr/><hr/>");
-			reportTxt = reportTxt.replaceAll(" ?---+", "<hr/>");
-			reportTxt = reportTxt.replace("  ", "&nbsp; ");
-			reportTxt = reportTxt.replace("  ", "&nbsp; ");
-			reportTxt = reportTxt.replace("\n", "<br/>\n");
 
-			reportTxt = "<div><h2>Species: " + basicEscape(species) + "</h2>" + reportTxt;
-			reportTxt = "<p><samp>" + reportTxt + "</samp></p></div>";
-
-			gameComplete.append(reportTxt);
-			gameComplete.append("</html>");
 			System.out.println("=== " + species);
-			stats.add(gameComplete.toString());
+			
+			if (!reportTxt.contains("\n"+SECTION_MARKER_START)) {
+				reportTxt += "\n"+SECTION_MARKER_START+"\n";
+			}
+			
+			String[] sections = reportTxt.split("\n"+Pattern.quote(SECTION_MARKER_START)+"[^\n]*");
+
+			StringBuilder gameComplete = new StringBuilder();
+			for (String section: sections) {
+				section = basicEscape(section);
+				section = section.replace("\t", "    ");
+				section = section.replaceAll(" ?(\\* )+\\*?", "<hr/><hr/>");
+				section = section.replaceAll(" ?---+", "<hr/>");
+				section = section.replace("  ", "&nbsp; ");
+				section = section.replace("  ", "&nbsp; ");
+				section = section.replace("\n", "<br/>\n");
+				
+				gameComplete.setLength(0);
+				gameComplete.append("<html>");
+				gameComplete.append("<div><h2>Species: ");
+				gameComplete.append(basicEscape(species));
+				gameComplete.append("</h2>");
+				gameComplete.append("<p><samp>");
+				gameComplete.append(section);
+				gameComplete.append("</samp></p></div>");
+				gameComplete.append("</html>");
+				
+				stats.add(gameComplete.toString());
+			}
 		}
 		return stats;
 	}
@@ -2197,6 +2215,9 @@ public class FarHorizonsApp implements Runnable {
 
 	private String generateGameCompleteTitle(File gameDir, String tn) {
 		String title = "Far Horizons Steem - Game Complete - Game " + gameDir.getName().replaceAll("[^\\d]", "");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		sdf.setTimeZone(TimeZone.getTimeZone("EST5EDT"));
+		title += " ["+ sdf.format(new Date())+"] "+System.currentTimeMillis();
 		return title;
 	}
 
