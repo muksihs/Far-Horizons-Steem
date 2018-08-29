@@ -692,13 +692,13 @@ public class FarHorizonsApp implements Runnable {
 			if (gameDir == null) {
 				continue gameScan;
 			}
-			cleanup(gameDir);
+			backupAndClean(gameDir);
 		}
 	}
 
-	private void cleanup(File gameDir) throws InterruptedException, IOException {
+	private void backupAndClean(File gameDir) throws InterruptedException, IOException {
 		String tn = getTurnNumber(gameDir);
-		File backupDir = new File(gameDir, "backup/turn-" + tn);
+		File backupDir = new File(gameDir, "backup/start-of-turn-" + tn);
 		File reportsDir = new File(gameDir, "reports");
 		backupDir.mkdirs();
 		for (File file : FileUtils.listFiles(gameDir, null, false)) {
@@ -890,8 +890,6 @@ public class FarHorizonsApp implements Runnable {
 				System.out.println("All players account for. Running game.");
 			}
 
-			doPrerunBackup(gameDir);
-
 			for (String playerKey : playerInfo.keySet()) {
 				String speciesNo = registeredPlayers.get(playerKey);
 				while (speciesNo.length() < 2) {
@@ -913,6 +911,12 @@ public class FarHorizonsApp implements Runnable {
 					"Finish", "Report" }) {
 				System.out.println("Running: " + cmd);
 				xpb = new ProcessBuilder(new File(gameDir, "bin/" + cmd).getAbsolutePath());
+				if ("Combat".equals(cmd)) {
+					/*
+					 * Combat sequences causing post size issues, force summary mode.
+					 */
+					xpb.command().add("-s");
+				}
 				xpb.redirectOutput(new File(logDir, "_" + cmd + ".log.txt"));
 				xpb.redirectErrorStream(true);
 				xpb.directory(gameDir);
@@ -922,7 +926,7 @@ public class FarHorizonsApp implements Runnable {
 					throw new RuntimeException("Command " + cmd + " failed.");
 				}
 			}
-			cleanup(gameDir);
+			backupAndClean(gameDir);
 			if (isGameOver) {
 				String gameCompletePermlink = postGameComplete(gameDir);
 				for (String player : playerPermlinks.keySet()) {
@@ -942,16 +946,6 @@ public class FarHorizonsApp implements Runnable {
 
 	private String basicUnescape(String text) {
 		return text.replace("&gt;", ">").replace("&lt;", "<").replace("&amp;", "&");
-	}
-
-	private void doPrerunBackup(File gameDir) throws IOException, InterruptedException {
-		System.out.println("(backup pre-run)");
-		String tn = getTurnNumber(gameDir);
-		File backupDir = new File(gameDir, "backup/preturn-" + tn);
-		FileUtils.deleteQuietly(backupDir);
-		for (File file : FileUtils.listFiles(gameDir, null, false)) {
-			FileUtils.copyFileToDirectory(file, backupDir, true);
-		}
 	}
 
 	private void doCreateMaps() throws SteemCommunicationException, SteemResponseException, JsonParseException,
@@ -1335,7 +1329,7 @@ public class FarHorizonsApp implements Runnable {
 			// assuming all went well with no error exit status...
 			createMaps(gameDir);
 
-			cleanup(gameDir);
+			backupAndClean(gameDir);
 			String newTurnPermlink = postTurnResults(gameDir);
 			// post back to previous post a reply with new post link
 			markGameStarted(accountName, entry.getComment().getPermlink(), newTurnPermlink, tags);
