@@ -20,6 +20,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -66,9 +67,14 @@ import models.NewGameInfo;
 import steem.models.CommentMetadata;
 
 public class FarHorizonsApp implements Runnable {
-	
+
+	private static final String KEY_GAME_DATA = "game-data";
+	private Map<String, Object> defaultMetadata;
+	private static final String MIME_HTML = "text/html";
+
 	private static final String SECTION_MARKER_START = "* * *";
 
+	@SuppressWarnings("unused")
 	private static final int MAX_COMMENT_SIZE=16*1024;
 
 	private static final String SEM_GAMECOMPLETE = "_game-complete";
@@ -103,6 +109,8 @@ public class FarHorizonsApp implements Runnable {
 
 	public FarHorizonsApp(String[] args) {
 		this.args = args;
+		defaultMetadata = new LinkedHashMap<>();
+		defaultMetadata.put("app", "FarHorizons/20180831-00");
 	}
 
 	private void loadSteemAccountInformation() throws FileNotFoundException, IOException {
@@ -241,7 +249,9 @@ public class FarHorizonsApp implements Runnable {
 							+ NumberFormat.getInstance().format((100d - 100d * getBandwidthUsedPercent())) + "%");
 					continue;
 				}
+				System.out.println("-> doUpvateCheck");
 				doUpvoteCheck();
+				System.out.println("-> doRunGameTurn");
 				doRunGameTurn();
 				continue;
 			}
@@ -620,7 +630,7 @@ public class FarHorizonsApp implements Runnable {
 			try {
 				waitIfLowBandwidth();
 				System.out.println("POSTING: " + title);
-				steemJ.createPost(title, payoutHtml, tags);
+				steemJ.createPost(title, payoutHtml, tags, MIME_HTML, defaultMetadata);
 				return;
 			} catch (Exception e) {
 				System.err.println("Posting error. Sleeping 5 minutes.");
@@ -1007,7 +1017,7 @@ public class FarHorizonsApp implements Runnable {
 			waitIfLowBandwidth();
 			try {
 				System.out.println("POSTING: " + info.getTitle());
-				steemJ.createPost(info.getTitle(), info.getHtml(), tags);
+				steemJ.createPost(info.getTitle(), info.getHtml(), tags, MIME_HTML, defaultMetadata);
 				return;
 			} catch (Exception e) {
 				System.err.println("Posting error. Sleeping 5 minutes.");
@@ -1366,7 +1376,7 @@ public class FarHorizonsApp implements Runnable {
 						"<html><h1>GAME STARTED!</h1>[<a href='https://steemit.com/far-horizons/@" + accountName + "/"
 								+ newTurnPermlink + "' target='_blank'>"
 								+ StringEscapeUtils.escapeHtml4(newTurnPermlink) + "</a>]</html>",
-						tags.toArray(new String[0]));
+						tags.toArray(new String[0]), MIME_HTML, defaultMetadata);
 				System.out.println("GAME START.");
 				return;
 			} catch (SteemCommunicationException | SteemResponseException | SteemInvalidTransactionException e) {
@@ -1386,7 +1396,7 @@ public class FarHorizonsApp implements Runnable {
 						+ " [<a href='https://steemit.com/far-horizons/@" + accountName + "/" + gameCompleteLink
 						+ "' target='_blank'>" + basicEscape(gameCompleteLink) + "</a>]</html>";
 				steemJ.createComment(new AccountName(parentAuthor), parentPermlink, gameCompleteHtml,
-						tags.toArray(new String[0]));
+						tags.toArray(new String[0]), MIME_HTML, defaultMetadata);
 				System.out.println("GAME COMPLETE! [" + parentPermlink.getLink() + "]");
 				return;
 			} catch (SteemCommunicationException | SteemResponseException | SteemInvalidTransactionException e) {
@@ -1405,7 +1415,7 @@ public class FarHorizonsApp implements Runnable {
 						"<html>" + "<h4>@" + parentAuthor + "</h4>" + "<h3>TURN COMPLETE!</h3>RESULTS:" //
 								+ " [<a href='https://steemit.com/far-horizons/@" + accountName + "/" + newTurnPermlink
 								+ "' target='_blank'>" + basicEscape(newTurnPermlink) + "</a>]</html>",
-						tags.toArray(new String[0]));
+						tags.toArray(new String[0]), MIME_HTML, defaultMetadata);
 				System.out.println("TURN COMPLETE! [" + parentPermlink.getLink() + "]");
 				return;
 			} catch (SteemCommunicationException | SteemResponseException | SteemInvalidTransactionException e) {
@@ -1421,12 +1431,10 @@ public class FarHorizonsApp implements Runnable {
 		}
 	}
 
-	private String generateAndSaveTurnResultsHtml(File gameDir) throws IOException, InterruptedException {
+	private TurnResults generateAndSaveTurnResultsHtml(File gameDir) throws IOException, InterruptedException {
 		String tn = getTurnNumber(gameDir);
 		File htmlFile = new File(gameDir, "reports/_steem-post-" + tn + ".html");
-//		if (htmlFile.exists()) {
-//			return FileUtils.readFileToString(htmlFile, StandardCharsets.UTF_8);
-//		}
+		File gamedataFile = new File(gameDir, "reports/_steem-post-" + tn + ".data");
 		GregorianCalendar cal = new GregorianCalendar(EST5EDT);
 		cal.add(GregorianCalendar.DAY_OF_YEAR, +3);
 		int minute = cal.get(GregorianCalendar.MINUTE);
@@ -1444,71 +1452,71 @@ public class FarHorizonsApp implements Runnable {
 		String deadlineUtc = basicEscape(df.format(cal.getTime())) + " UTC";
 
 		System.out.println("Generating HTML for game: " + gameDir.getName());
-		StringBuilder turnResults = new StringBuilder();
-		turnResults.append("<html charset='UTF-8'>");
-		turnResults.append("<div>");
-		turnResults.append("<h1>Far Horizons Steem</h1>");
-		turnResults.append(DIV_PULL_RIGHT_START);
-		turnResults.append("<img style='max-width:100%;' src='" + NasaApod.getApodImageUrl(gameDir) + "'/>");
-		turnResults.append("<center>(Image courtesy of NASA's \"Astronomy Picture of the Day\")</center>");
-		turnResults.append("</div>");
-		turnResults.append("<h2>Start of Turn ");
-		turnResults.append(tn);
-		turnResults.append("</h2>");
+		StringBuilder turnMessage = new StringBuilder();
+		turnMessage.append("<html charset='UTF-8'>");
+		turnMessage.append("<div>");
+		turnMessage.append("<h1>Far Horizons Steem</h1>");
+		turnMessage.append(DIV_PULL_RIGHT_START);
+		turnMessage.append("<img style='max-width:100%;' src='" + NasaApod.getApodImageUrl(gameDir) + "'/>");
+		turnMessage.append("<center>(Image courtesy of NASA's \"Astronomy Picture of the Day\")</center>");
+		turnMessage.append("</div>");
+		turnMessage.append("<h2>Start of Turn ");
+		turnMessage.append(tn);
+		turnMessage.append("</h2>");
 		/*
 		 * load players
 		 */
-		turnResults.append("<h3>Players</h3>");
-		turnResults.append("<p>");
+		turnMessage.append("<h3>Players</h3>");
+		turnMessage.append("<p>");
 		String playersTxt = FileUtils.readFileToString(new File(gameDir, "_players.tab"), StandardCharsets.UTF_8);
 		String[] players = playersTxt.split("\n");
 		for (String player : players) {
 			if (!player.contains("\t")) {
 				continue;
 			}
-			turnResults.append("@");
-			turnResults.append(StringEscapeUtils.escapeHtml4(player.split("\t")[1].trim()));
-			turnResults.append(" ");
+			turnMessage.append("@");
+			turnMessage.append(StringEscapeUtils.escapeHtml4(player.split("\t")[1].trim()));
+			turnMessage.append(" ");
 		}
-		turnResults.append("</p>");
-		turnResults.append("<h3>Attention Players</h3>");
-		turnResults.append("<p>");
-		turnResults.append("Visit: [");
-		turnResults.append("<a href='http://muksihs.com/Far-Horizons-Steem-Client/#");
-		turnResults.append(_PERMLINK);
-		turnResults.append("' target='_blank'>Far-Horizons-Steem-Client</a>]");
-		turnResults.append(" to view your reports for this turn and to submit your commands.");
-		turnResults.append("</p>");
-		turnResults.append("<h4>You must submit your orders by:</h4>");
-		turnResults.append("<p><strong>");
-		turnResults.append(deadlineEst5Edt);
-		turnResults.append("</strong><br/><strong>");
-		turnResults.append(deadlineUtc);
-		turnResults.append("</strong>");
-		turnResults.append("</p>");
-		turnResults.append("<p>The next turn will commence shortly");
-		turnResults.append(" after all players have submitted their orders");
-		turnResults.append(" or after the submit orders deadline has passed.</p>");
-		turnResults.append("<p>The game manual is here: [");
-		turnResults.append("<a href='http://muksihs.com/Far-Horizons-Steem-Client/Far-Horizons-Manual.pdf'"
+		turnMessage.append("</p>");
+		turnMessage.append("<h3>Attention Players</h3>");
+		turnMessage.append("<p>");
+		turnMessage.append("Visit: [");
+		turnMessage.append("<a href='http://muksihs.com/Far-Horizons-Steem-Client/#");
+		turnMessage.append(_PERMLINK);
+		turnMessage.append("' target='_blank'>Far-Horizons-Steem-Client</a>]");
+		turnMessage.append(" to view your reports for this turn and to submit your commands.");
+		turnMessage.append("</p>");
+		turnMessage.append("<h4>You must submit your orders by:</h4>");
+		turnMessage.append("<p><strong>");
+		turnMessage.append(deadlineEst5Edt);
+		turnMessage.append("</strong><br/><strong>");
+		turnMessage.append(deadlineUtc);
+		turnMessage.append("</strong>");
+		turnMessage.append("</p>");
+		turnMessage.append("<p>The next turn will commence shortly");
+		turnMessage.append(" after all players have submitted their orders");
+		turnMessage.append(" or after the submit orders deadline has passed.</p>");
+		turnMessage.append("<p>The game manual is here: [");
+		turnMessage.append("<a href='http://muksihs.com/Far-Horizons-Steem-Client/Far-Horizons-Manual.pdf'"
 				+ " target='_blank'>PDF GAME RULES</a>");
-		turnResults.append("]. The game star maps for this game are below and are clickable.");
-		turnResults.append("</p>");
-		turnResults.append("<p>");
-		turnResults.append("<strong>Reminder</strong>: ");
-		turnResults.append("To be in the participation reward pool,");
-		turnResults.append(" you must <em>both</em> up vote this post and submit your game orders");
-		turnResults.append(" before the deadline.");
-		turnResults.append(" The participation pool is calculated on a per turn basis");
-		turnResults.append(" <em>after</em> each payout is received.");
-		turnResults.append(" No votes means no payouts means no rewards!");
-		turnResults.append("</p>");
+		turnMessage.append("]. The game star maps for this game are below and are clickable.");
+		turnMessage.append("</p>");
+		turnMessage.append("<p>");
+		turnMessage.append("<strong>Reminder</strong>: ");
+		turnMessage.append("To be in the participation reward pool,");
+		turnMessage.append(" you must <em>both</em> up vote this post and submit your game orders");
+		turnMessage.append(" before the deadline.");
+		turnMessage.append(" The participation pool is calculated on a per turn basis");
+		turnMessage.append(" <em>after</em> each payout is received.");
+		turnMessage.append(" No votes means no payouts means no rewards!");
+		turnMessage.append("</p>");
 
-		turnResults.append("<h3>Want to join in to play and earn rewards?</h3>");
-		turnResults.append("<p>");
-		turnResults.append("Reply to this post asking the gamemaster to start a new game.");
-		turnResults.append(" <em>Players can only join at the start of a new game.</em>");
-		turnResults.append("</p>");
+		turnMessage.append("<h3>Want to join in to play and earn rewards?</h3>");
+		turnMessage.append("<p>");
+		turnMessage.append("Reply to this post asking the gamemaster to start a new game.");
+		turnMessage.append(" <em>Players can only join at the start of a new game.</em>");
+		turnMessage.append("</p>");
 
 		/**
 		 * For private reports.
@@ -1586,24 +1594,29 @@ public class FarHorizonsApp implements Runnable {
 			publicInfo.append("---<br/>");
 		}
 		// turnResults.append(publicInfo);
-		turnResults.append("</div>");
-		turnResults.append("<h6>GAME STAR MAPS.</h6>");
-		turnResults.append(getMapImagesHtml(gameDir));
-		turnResults.append("<h4>BEGIN SECRET GALACTIC DATABASE TRANSMISSION:</h4>");
-		String secretMessage = basicEscape(LZSEncoding.compressToUTF16(transmission.toString()));
-		secretMessage = "<hr/><div id='secret-message'>" + secretMessage + "</div><hr/>";
+		turnMessage.append("</div>");
+		turnMessage.append("<h6>GAME STAR MAPS.</h6>");
+		turnMessage.append(getMapImagesHtml(gameDir));
+//		turnResults.append("<h4>BEGIN SECRET GALACTIC DATABASE TRANSMISSION:</h4>");
+//		String secretMessage = basicEscape(LZSEncoding.compressToUTF16(transmission.toString()));
+//		secretMessage = "<hr/><div id='secret-message'>" + secretMessage + "</div><hr/>";
+		String secretMessage = LZSEncoding.compressToBase64(transmission.toString());
 		System.out.println(
 				"PLAYER REPORTS: " + transmission.toString().getBytes(StandardCharsets.UTF_8).length + " UTF-8 bytes, "
 						+ secretMessage.getBytes(StandardCharsets.UTF_8).length + " UTF-8 compressed bytes.");
-		turnResults.append(secretMessage);
-		turnResults.append("<h5>END SECRET GALACTIC DATABASE TRANSMISSION.</h5>");
-		turnResults.append("</html>");
+//		turnResults.append(secretMessage);
+//		turnResults.append("<h5>END SECRET GALACTIC DATABASE TRANSMISSION.</h5>");
+		turnMessage.append("</html>");
 		String title = generateTurnTitle(gameDir, tn);
 		String permlink = "@" + accountName + "/" + SteemJUtils.createPermlinkString(title);
-		String turnResultsHtml = turnResults.toString();
+		String turnResultsHtml = turnMessage.toString();
 		turnResultsHtml = turnResultsHtml.replace(_PERMLINK, permlink);
 		FileUtils.write(htmlFile, turnResultsHtml + "\n", StandardCharsets.UTF_8);
-		return turnResultsHtml;
+		FileUtils.write(gamedataFile, secretMessage, StandardCharsets.UTF_8);
+		TurnResults turnResults = new TurnResults();
+		turnResults.setMessage(turnResultsHtml+"\n");
+		turnResults.setCompressedGameData(secretMessage);
+		return turnResults;
 	}
 
 	private String generateAndSavePayoutResultsHtml(File gameDir, String turn, String permlink, Set<String> payees,
@@ -2005,7 +2018,7 @@ public class FarHorizonsApp implements Runnable {
 				waitIfLowBandwidth();
 				sleep(25l * 1000l);// 25 seconds
 				try {
-					steemJ.createComment(parentAuthor, parentPermlink, stat, tags);
+					steemJ.createComment(parentAuthor, parentPermlink, stat, tags, MIME_HTML, defaultMetadata);
 					break doPost;
 				} catch (SteemCommunicationException | SteemResponseException | SteemInvalidTransactionException e) {
 					System.err.println("Posting error. Retry in 25 seconds. [" + parentPermlink.getLink() + "]");
@@ -2046,7 +2059,7 @@ public class FarHorizonsApp implements Runnable {
 			try {
 				System.out.println("POSTING: " + title + " ("
 						+ gameCompleteResultsHtml.getBytes(StandardCharsets.UTF_8).length + " bytes)");
-				CommentOperation posted = steemJ.createPost(title, gameCompleteResultsHtml, tags);
+				CommentOperation posted = steemJ.createPost(title, gameCompleteResultsHtml, tags, MIME_HTML, defaultMetadata);
 				parentPermlink = posted.getPermlink();
 				parentAuthor = posted.getAuthor();
 				break doPost;
@@ -2184,7 +2197,11 @@ public class FarHorizonsApp implements Runnable {
 	private String postTurnResults(File gameDir) throws IOException, InterruptedException, SteemCommunicationException,
 			SteemResponseException, SteemInvalidTransactionException {
 
-		String turnResultsHtml = generateAndSaveTurnResultsHtml(gameDir);
+		TurnResults turnResult = generateAndSaveTurnResultsHtml(gameDir);
+		String turnResultsHtml = turnResult.getMessage();
+		Map<String, Object> metadata = new HashMap<>();
+		metadata.putAll(defaultMetadata);
+		metadata.put(KEY_GAME_DATA, turnResult.getCompressedGameData());
 
 		String tn = getTurnNumber(gameDir);
 		String title = generateTurnTitle(gameDir, tn);
@@ -2195,10 +2212,12 @@ public class FarHorizonsApp implements Runnable {
 		tags[3] = "freerewards";
 		tags[4] = "contest";
 		while (true) {
+			boolean isUpdate=false;
+			Permlink permlink = new Permlink(SteemJUtils.createPermlinkString(title));
 			try {
-				Discussion content = steemJ.getContent(account, new Permlink(SteemJUtils.createPermlinkString(title)));
+				Discussion content = steemJ.getContent(account, permlink);
 				if (content != null && content.getBody() != null && content.getBody().trim().startsWith("<html")) {
-					return SteemJUtils.createPermlinkString(title);
+					isUpdate = true;
 				}
 			} catch (Exception e) {
 				System.err.println("Read error. Sleeping 5 minutes.");
@@ -2209,7 +2228,13 @@ public class FarHorizonsApp implements Runnable {
 				waitIfLowBandwidth();
 				System.out.println("POSTING: " + title + " (" + turnResultsHtml.getBytes(StandardCharsets.UTF_8).length
 						+ " bytes)");
-				CommentOperation posted = steemJ.createPost(title, turnResultsHtml, tags);
+				if (isUpdate) {
+					CommentOperation posted = steemJ.updatePost(permlink, title,//
+							turnResultsHtml, tags, MIME_HTML, metadata);
+					return posted.getPermlink().getLink();
+				}
+				CommentOperation posted = steemJ.createPost(title,//
+						turnResultsHtml, tags, MIME_HTML, metadata);
 				return posted.getPermlink().getLink();
 			} catch (Exception e) {
 				System.err.println("Posting error. Sleeping 5 minutes.");
