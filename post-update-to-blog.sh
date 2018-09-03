@@ -11,7 +11,7 @@ mkdir tmp 2> /dev/null || true
 touch tmp/log.old
 git log --branches=\* --after="1 week ago" > tmp/log.new
 diff tmp/log.new tmp/log.old > /dev/null 2>&1 && exit
-if [ -s tmp/log.new ]; then exit; fi
+if [ ! -s tmp/log.new ]; then exit; fi
 echo "Posting new message"
 msgfile="tmp/msg.txt"
 cp /dev/null "$msgfile"
