@@ -32,7 +32,8 @@ configurations {
 dependencies {
 	//compile 'eu.bittrade.libs:steemj-core:0.4.3'
 	//compile 'com.github.muksihs:steem-java-api-wrapper:5c3a24a'
-	compile project(':steemj-core')
+	//compile project(':steemj-core')
+	compile 'com.github.muksihs.steem-java-api-wrapper:steemj-core:0.4.6-20180901-01'
 	compile 'eu.bittrade.libs:steemj-image-upload:1.0.0'
 	compile 'org.apache.commons:commons-text:+'
 	compile 'com.github.tommyettinger:blazingchain:1.4.+'
