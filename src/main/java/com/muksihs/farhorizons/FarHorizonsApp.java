@@ -921,7 +921,7 @@ public class FarHorizonsApp implements Runnable {
 					"Finish", "Report" }) {
 				System.out.println("Running: " + cmd);
 				xpb = new ProcessBuilder(new File(gameDir, "bin/" + cmd).getAbsolutePath());
-				if ("Combat".equals(cmd)) {
+				if ("Combat".equals(cmd) || "Strike".equals(cmd)) {
 					/*
 					 * Combat sequences causing post size issues, force summary mode.
 					 */
