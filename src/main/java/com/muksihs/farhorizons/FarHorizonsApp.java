@@ -171,7 +171,8 @@ public class FarHorizonsApp implements Runnable {
 		myConfig.setEncodingCharset(StandardCharsets.UTF_8);
 		myConfig.setIdleTimeout(250);
 		myConfig.setResponseTimeout(1000);
-//		myConfig.setSteemJWeight((short) 0);
+		//Maximize participation rewards
+		myConfig.setSteemJWeight((short) 0);
 		account = new AccountName(this.accountName);
 		myConfig.setDefaultAccount(account);
 		List<ImmutablePair<PrivateKeyType, String>> privateKeys = new ArrayList<>();
