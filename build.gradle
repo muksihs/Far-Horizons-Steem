@@ -7,7 +7,7 @@ apply plugin: 'eclipse-wtp'
 
 group "com.muksihs"
 
-version = '20171214'
+version = '20180906'
 
 sourceCompatibility = 1.8
 compileJava.options.encoding = 'UTF-8'
