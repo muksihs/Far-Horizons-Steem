@@ -1815,7 +1815,7 @@ public class FarHorizonsApp implements Runnable {
 		gameInvite.append("<a href='http://muksihs.com/Far-Horizons-Steem-Client/#");
 		gameInvite.append(_PERMLINK);
 		gameInvite.append("' target='_blank'>Far-Horizons-Steem-Client</a>]");
-		gameInvite.append(" to fill our your species information form to join this game.");
+		gameInvite.append(" to fill out your species information form to join this game.");
 		gameInvite.append("</p>");
 		gameInvite.append("<h4>You must submit your game join form by:</h4>");
 		gameInvite.append("<p><strong>");
