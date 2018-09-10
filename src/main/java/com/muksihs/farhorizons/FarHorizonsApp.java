@@ -75,7 +75,7 @@ public class FarHorizonsApp implements Runnable {
 	private static final String SECTION_MARKER_START = "* * *";
 
 	@SuppressWarnings("unused")
-	private static final int MAX_COMMENT_SIZE=16*1024;
+	private static final int MAX_COMMENT_SIZE = 16 * 1024;
 
 	private static final String SEM_GAMECOMPLETE = "_game-complete";
 	private static final String SEM_FORCEGAMECOMPLETE = "_force-game-complete";
@@ -171,7 +171,7 @@ public class FarHorizonsApp implements Runnable {
 		myConfig.setEncodingCharset(StandardCharsets.UTF_8);
 		myConfig.setIdleTimeout(250);
 		myConfig.setResponseTimeout(1000);
-		//Maximize participation rewards
+		// Maximize participation rewards
 		myConfig.setSteemJWeight((short) 0);
 		account = new AccountName(this.accountName);
 		myConfig.setDefaultAccount(account);
@@ -449,23 +449,23 @@ public class FarHorizonsApp implements Runnable {
 			}
 			File steemDir = new File(gameDir, "steem-data");
 			steemDir.mkdirs();
-			
+
 			BigDecimal sbdPayout = BigDecimal.valueOf(aro.getSbdPayout().getAmount(),
 					aro.getSbdPayout().getPrecision());
 			BigDecimal stmPayout = BigDecimal.valueOf(aro.getSteemPayout().getAmount(),
 					aro.getSteemPayout().getPrecision());
-			
-			boolean isSbdPayout = (sbdPayout.compareTo(stmPayout)>0);
-			
+
+			boolean isSbdPayout = (sbdPayout.compareTo(stmPayout) > 0);
+
 			BigDecimal payoutPool;
 			if (isSbdPayout) {
 				payoutPool = sbdPayout;
 			} else {
 				payoutPool = stmPayout;
 			}
-			
+
 			System.out.println("LINK: " + aro.getPermlink().getLink());
-			String currency = isSbdPayout?" SBD":" STEEM";
+			String currency = isSbdPayout ? " SBD" : " STEEM";
 			System.out.println("PAYOUT: " + payoutPool.toPlainString() + currency);
 			List<String> playerList = FileUtils.readLines(new File(gameDir, "_players.tab"),
 					StandardCharsets.UTF_8.name());
@@ -601,7 +601,8 @@ public class FarHorizonsApp implements Runnable {
 				}
 			}
 			System.out.println(" - Posting reward notification.");
-			doPostRewardNotification(gameDir, aro.getPermlink().getLink(), turn, activePlayers, payouts, pool, isSbdPayout);
+			doPostRewardNotification(gameDir, aro.getPermlink().getLink(), turn, activePlayers, payouts, pool,
+					isSbdPayout);
 			FileUtils.touch(semaphore);
 		}
 	}
@@ -948,6 +949,7 @@ public class FarHorizonsApp implements Runnable {
 				FileUtils.touch(semGameComplete);
 			} else {
 				String newTurnPermlink = postTurnResults(gameDir);
+				postGameMaps(gameDir, new Permlink(newTurnPermlink), tags);
 				for (String player : playerPermlinks.keySet()) {
 					Permlink playerPermlink = playerPermlinks.get(player);
 					markTurnComplete(player, playerPermlink, newTurnPermlink, tags);
@@ -1426,6 +1428,30 @@ public class FarHorizonsApp implements Runnable {
 		}
 	}
 
+	private void postGameMaps(File gameDir, Permlink parentPermlink, Set<String> tags) {
+		String mapImagesHtml = getMapImagesHtml(gameDir);
+		if (mapImagesHtml.isEmpty()) {
+			return;
+		}
+		StringBuilder sb = new StringBuilder();
+		sb.append("<html>");
+		sb.append("<h3>GAME STAR MAPS</h3>");
+		sb.append(mapImagesHtml);
+		sb.append("</html>");
+		while (true) {
+			waitIfLowBandwidth();
+			sleep(25l * 1000l);// 25 seconds
+			try {
+				steemJ.createComment(account, parentPermlink, sb.toString(), tags.toArray(new String[0]), MIME_HTML,
+						defaultMetadata);
+				System.out.println("MAPS POSTED! [" + parentPermlink.getLink() + "]");
+				return;
+			} catch (SteemCommunicationException | SteemResponseException | SteemInvalidTransactionException e) {
+				System.err.println("Posting error. Retry in 25 seconds. [" + parentPermlink.getLink() + "]");
+			}
+		}
+	}
+
 	private void sleep(long ms) {
 		try {
 			Thread.sleep(ms);
@@ -1597,17 +1623,19 @@ public class FarHorizonsApp implements Runnable {
 		}
 		// turnResults.append(publicInfo);
 		turnMessage.append("</div>");
-		turnMessage.append("<h6>GAME STAR MAPS.</h6>");
-		turnMessage.append(getMapImagesHtml(gameDir));
-//		turnResults.append("<h4>BEGIN SECRET GALACTIC DATABASE TRANSMISSION:</h4>");
-//		String secretMessage = basicEscape(LZSEncoding.compressToUTF16(transmission.toString()));
-//		secretMessage = "<hr/><div id='secret-message'>" + secretMessage + "</div><hr/>";
+		// turnMessage.append("<h6>GAME STAR MAPS.</h6>");
+		// turnMessage.append(getMapImagesHtml(gameDir));
+		// turnResults.append("<h4>BEGIN SECRET GALACTIC DATABASE TRANSMISSION:</h4>");
+		// String secretMessage =
+		// basicEscape(LZSEncoding.compressToUTF16(transmission.toString()));
+		// secretMessage = "<hr/><div id='secret-message'>" + secretMessage +
+		// "</div><hr/>";
 		String secretMessage = LZSEncoding.compressToBase64(transmission.toString());
 		System.out.println(
 				"PLAYER REPORTS: " + transmission.toString().getBytes(StandardCharsets.UTF_8).length + " UTF-8 bytes, "
 						+ secretMessage.getBytes(StandardCharsets.UTF_8).length + " UTF-8 compressed bytes.");
-//		turnResults.append(secretMessage);
-//		turnResults.append("<h5>END SECRET GALACTIC DATABASE TRANSMISSION.</h5>");
+		// turnResults.append(secretMessage);
+		// turnResults.append("<h5>END SECRET GALACTIC DATABASE TRANSMISSION.</h5>");
 		turnMessage.append("</html>");
 		String title = generateTurnTitle(gameDir, tn);
 		String permlink = "@" + accountName + "/" + SteemJUtils.createPermlinkString(title);
@@ -1616,7 +1644,7 @@ public class FarHorizonsApp implements Runnable {
 		FileUtils.write(htmlFile, turnResultsHtml + "\n", StandardCharsets.UTF_8);
 		FileUtils.write(gamedataFile, secretMessage, StandardCharsets.UTF_8);
 		TurnResults turnResults = new TurnResults();
-		turnResults.setMessage(turnResultsHtml+"\n");
+		turnResults.setMessage(turnResultsHtml + "\n");
 		turnResults.setCompressedGameData(secretMessage);
 		return turnResults;
 	}
@@ -1633,7 +1661,7 @@ public class FarHorizonsApp implements Runnable {
 		} else {
 			turn = " - For Turn " + turn;
 		}
-		String currency = isSbdPayout?" SBD":" STEEM";
+		String currency = isSbdPayout ? " SBD" : " STEEM";
 		StringBuilder turnResults = new StringBuilder();
 		turnResults.append("<html charset='UTF-8'>");
 		turnResults.append("<div>");
@@ -1895,8 +1923,8 @@ public class FarHorizonsApp implements Runnable {
 		gameInvite.append(" up between the players with the remainder assigned to the gamemaster.");
 		gameInvite.append(" <em>You can think of it as a player participation pool.</em></p>");
 
-		gameInvite
-				.append("<h3>Is the game already started and you want to join in to play and possibly earn rewards?</h3>");
+		gameInvite.append(
+				"<h3>Is the game already started and you want to join in to play and possibly earn rewards?</h3>");
 		gameInvite.append("<p>");
 		gameInvite.append("Reply to this post asking the gamemaster to start a new game.");
 		gameInvite.append(" <em>Players can only join at the start of a new game.</em>");
@@ -2061,7 +2089,8 @@ public class FarHorizonsApp implements Runnable {
 			try {
 				System.out.println("POSTING: " + title + " ("
 						+ gameCompleteResultsHtml.getBytes(StandardCharsets.UTF_8).length + " bytes)");
-				CommentOperation posted = steemJ.createPost(title, gameCompleteResultsHtml, tags, MIME_HTML, defaultMetadata);
+				CommentOperation posted = steemJ.createPost(title, gameCompleteResultsHtml, tags, MIME_HTML,
+						defaultMetadata);
 				parentPermlink = posted.getPermlink();
 				parentAuthor = posted.getAuthor();
 				break doPost;
@@ -2160,15 +2189,15 @@ public class FarHorizonsApp implements Runnable {
 			reportTxt = StringUtils.substringAfter(reportTxt, "\n").trim();
 
 			System.out.println("=== " + species);
-			
-			if (!reportTxt.contains("\n"+SECTION_MARKER_START)) {
-				reportTxt += "\n"+SECTION_MARKER_START+"\n";
+
+			if (!reportTxt.contains("\n" + SECTION_MARKER_START)) {
+				reportTxt += "\n" + SECTION_MARKER_START + "\n";
 			}
-			
-			String[] sections = reportTxt.split("\n"+Pattern.quote(SECTION_MARKER_START)+"[^\n]*");
+
+			String[] sections = reportTxt.split("\n" + Pattern.quote(SECTION_MARKER_START) + "[^\n]*");
 
 			StringBuilder gameComplete = new StringBuilder();
-			for (String section: sections) {
+			for (String section : sections) {
 				section = basicEscape(section);
 				section = section.replace("\t", "    ");
 				section = section.replaceAll(" ?(\\* )+\\*?", "<hr/><hr/>");
@@ -2176,7 +2205,7 @@ public class FarHorizonsApp implements Runnable {
 				section = section.replace("  ", "&nbsp; ");
 				section = section.replace("  ", "&nbsp; ");
 				section = section.replace("\n", "<br/>\n");
-				
+
 				gameComplete.setLength(0);
 				gameComplete.append("<html>");
 				gameComplete.append("<div><h2>Species: ");
@@ -2186,7 +2215,7 @@ public class FarHorizonsApp implements Runnable {
 				gameComplete.append(section);
 				gameComplete.append("</samp></p></div>");
 				gameComplete.append("</html>");
-				
+
 				stats.add(gameComplete.toString());
 			}
 		}
@@ -2214,7 +2243,7 @@ public class FarHorizonsApp implements Runnable {
 		tags[3] = "freerewards";
 		tags[4] = "contest";
 		while (true) {
-			boolean isUpdate=false;
+			boolean isUpdate = false;
 			Permlink permlink = new Permlink(SteemJUtils.createPermlinkString(title));
 			try {
 				Discussion content = steemJ.getContent(account, permlink);
@@ -2231,11 +2260,11 @@ public class FarHorizonsApp implements Runnable {
 				System.out.println("POSTING: " + title + " (" + turnResultsHtml.getBytes(StandardCharsets.UTF_8).length
 						+ " bytes)");
 				if (isUpdate) {
-					CommentOperation posted = steemJ.updatePost(permlink, title,//
+					CommentOperation posted = steemJ.updatePost(permlink, title, //
 							turnResultsHtml, tags, MIME_HTML, metadata);
 					return posted.getPermlink().getLink();
 				}
-				CommentOperation posted = steemJ.createPost(title,//
+				CommentOperation posted = steemJ.createPost(title, //
 						turnResultsHtml, tags, MIME_HTML, metadata);
 				return posted.getPermlink().getLink();
 			} catch (Exception e) {
@@ -2260,7 +2289,7 @@ public class FarHorizonsApp implements Runnable {
 		String title = "Far Horizons Steem - Game Complete - Game " + gameDir.getName().replaceAll("[^\\d]", "");
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		sdf.setTimeZone(TimeZone.getTimeZone("EST5EDT"));
-		title += " ["+ sdf.format(new Date())+"] "+System.currentTimeMillis();
+		title += " [" + sdf.format(new Date()) + "] " + System.currentTimeMillis();
 		return title;
 	}
 
