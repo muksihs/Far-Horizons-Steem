@@ -250,7 +250,7 @@ public class FarHorizonsApp implements Runnable {
 							+ NumberFormat.getInstance().format((100d - 100d * getBandwidthUsedPercent())) + "%");
 					continue;
 				}
-				System.out.println("-> doUpvateCheck");
+				System.out.println("-> doUpvoteCheck");
 				doUpvoteCheck();
 				System.out.println("-> doRunGameTurn");
 				doRunGameTurn();
@@ -794,6 +794,7 @@ public class FarHorizonsApp implements Runnable {
 			 */
 			File gameDir = null;
 			String gameId = "INVALID";
+			File semGameComplete = new File(gameDir, SEM_GAMECOMPLETE);
 			for (String tag : tags) {
 				if (!tag.startsWith("game-")) {
 					continue;
@@ -807,7 +808,7 @@ public class FarHorizonsApp implements Runnable {
 					already.add(tag);
 					continue gameScan;
 				}
-				if (new File(gameDir, SEM_GAMECOMPLETE).exists()) {
+				if (semGameComplete.exists()) {
 					System.out.println("Game over: " + tag);
 					already.add(tag);
 					continue gameScan;
@@ -944,7 +945,7 @@ public class FarHorizonsApp implements Runnable {
 					Permlink playerPermlink = playerPermlinks.get(player);
 					markGameComplete(player, playerPermlink, gameCompletePermlink, tags);
 				}
-				FileUtils.touch(new File(gameDir, SEM_GAMECOMPLETE));
+				FileUtils.touch(semGameComplete);
 			} else {
 				String newTurnPermlink = postTurnResults(gameDir);
 				for (String player : playerPermlinks.keySet()) {
