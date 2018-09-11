@@ -795,7 +795,6 @@ public class FarHorizonsApp implements Runnable {
 			 */
 			File gameDir = null;
 			String gameId = "INVALID";
-			File semGameComplete = new File(gameDir, SEM_GAMECOMPLETE);
 			for (String tag : tags) {
 				if (!tag.startsWith("game-")) {
 					continue;
@@ -809,15 +808,15 @@ public class FarHorizonsApp implements Runnable {
 					already.add(tag);
 					continue gameScan;
 				}
-				if (semGameComplete.exists()) {
-					System.out.println("Game over: " + tag);
-					already.add(tag);
-					continue gameScan;
-				}
 				already.add(tag);
 				break;
 			}
 			if (gameDir == null) {
+				continue gameScan;
+			}
+			File semGameComplete = new File(gameDir, SEM_GAMECOMPLETE);
+			if (semGameComplete.exists()) {
+				System.out.println("Game over: " + gameId);
 				continue gameScan;
 			}
 
@@ -1431,6 +1430,7 @@ public class FarHorizonsApp implements Runnable {
 	private void postGameMaps(File gameDir, Permlink parentPermlink, Set<String> tags) {
 		String mapImagesHtml = getMapImagesHtml(gameDir);
 		if (mapImagesHtml.isEmpty()) {
+			System.out.println("NO MAPS TO POST!");
 			return;
 		}
 		StringBuilder sb = new StringBuilder();
@@ -2004,11 +2004,15 @@ public class FarHorizonsApp implements Runnable {
 				URL imgUrl = SteemJImageUpload.uploadImage(uploadAccount, postingKey, imgFile);
 				mapUrlsList.add(imgUrl.toExternalForm());
 			} catch (IOException e) {
+				System.err.println("UPLOADING IMAGE "+imgFile.getAbsolutePath());
+				e.printStackTrace();
 			}
 		}
 		try {
 			FileUtils.writeLines(mapUrlsFile, StandardCharsets.UTF_8.name(), mapUrlsList);
 		} catch (IOException e) {
+			System.err.println("SAVING MAPS URLS "+mapUrlsFile.getAbsolutePath());
+			e.printStackTrace();
 		}
 		return mapUrlsList;
 	}
