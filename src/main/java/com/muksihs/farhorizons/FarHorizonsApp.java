@@ -624,10 +624,10 @@ public class FarHorizonsApp implements Runnable {
 		 */
 		String[] tags = new String[5];
 		tags[0] = "far-horizons";
-		tags[1] = "games";
-		tags[2] = "freesbd";
-		tags[3] = "contest";
-		tags[4] = "payout";
+		tags[1] = "strategy-game";
+		tags[2] = "steem-game";
+		tags[3] = "games";
+		tags[4] = "giveaway";
 		while (true) {
 			try {
 				waitIfLowBandwidth();
