@@ -15,7 +15,7 @@ if [ ! -s tmp/log.new ]; then exit; fi
 echo "Posting new message"
 msgfile="tmp/msg.txt"
 cp /dev/null "$msgfile"
-echo "title: Updates for $(basename $(pwd)) within the past week. $when"  >> "$msgfile"
+echo "title: Updates for $(basename $(pwd)) within the past week. [$when]"  >> "$msgfile"
 echo "tags: utopian-io steemdev java steemj git-log"  >> "$msgfile"
 echo "format: markdown"  >> "$msgfile"
 echo "" >> "$msgfile"
