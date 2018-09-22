@@ -329,9 +329,6 @@ public class FarHorizonsApp implements Runnable {
 			if (!tags.contains("far-horizons")) {
 				continue forBlogEntries;
 			}
-			if (!tags.contains("far-horizons")) {
-				continue forBlogEntries;
-			}
 			boolean isGame = false;
 			for (String tag : tags) {
 				if (tag.startsWith("game-")) {
