@@ -937,19 +937,21 @@ public class FarHorizonsApp implements Runnable {
 			}
 			backupAndClean(gameDir);
 			if (isGameOver) {
+				@SuppressWarnings("unused")
 				String gameCompletePermlink = postGameComplete(gameDir);
-				for (String player : playerPermlinks.keySet()) {
-					Permlink playerPermlink = playerPermlinks.get(player);
-					markGameComplete(player, playerPermlink, gameCompletePermlink, tags);
-				}
+//				for (String player : playerPermlinks.keySet()) {
+//					Permlink playerPermlink = playerPermlinks.get(player);
+//					markGameComplete(player, playerPermlink, gameCompletePermlink, tags);
+//				}
 				FileUtils.touch(semGameComplete);
 			} else {
+				@SuppressWarnings("unused")
 				String newTurnPermlink = postTurnResults(gameDir);
-				postGameMaps(gameDir, new Permlink(newTurnPermlink), tags);
-				for (String player : playerPermlinks.keySet()) {
-					Permlink playerPermlink = playerPermlinks.get(player);
-					markTurnComplete(player, playerPermlink, newTurnPermlink, tags);
-				}
+//				postGameMaps(gameDir, new Permlink(newTurnPermlink), tags);
+//				for (String player : playerPermlinks.keySet()) {
+//					Permlink playerPermlink = playerPermlinks.get(player);
+//					markTurnComplete(player, playerPermlink, newTurnPermlink, tags);
+//				}
 			}
 		}
 	}
@@ -1340,14 +1342,15 @@ public class FarHorizonsApp implements Runnable {
 			createMaps(gameDir);
 
 			backupAndClean(gameDir);
+			@SuppressWarnings("unused")
 			String newTurnPermlink = postTurnResults(gameDir);
 			// post back to previous post a reply with new post link
-			markGameStarted(accountName, entry.getComment().getPermlink(), newTurnPermlink, tags);
+//			markGameStarted(accountName, entry.getComment().getPermlink(), newTurnPermlink, tags);
 
-			for (String player : playerPermlinks.keySet()) {
-				Permlink playerPermlink = playerPermlinks.get(player);
-				markTurnComplete(player, playerPermlink, newTurnPermlink, tags);
-			}
+//			for (String player : playerPermlinks.keySet()) {
+//				Permlink playerPermlink = playerPermlinks.get(player);
+//				markTurnComplete(player, playerPermlink, newTurnPermlink, tags);
+//			}
 		}
 	}
 
@@ -1367,6 +1370,7 @@ public class FarHorizonsApp implements Runnable {
 		return "'" + arg.replace("'", "'\\''") + "'";
 	}
 
+	@SuppressWarnings("unused")
 	private void markGameStarted(String parentAuthor, Permlink permlink, String newTurnPermlink, Set<String> tags) {
 		while (true) {
 			waitIfLowBandwidth();
@@ -1386,6 +1390,7 @@ public class FarHorizonsApp implements Runnable {
 	}
 
 	// markGameComplete
+	@SuppressWarnings("unused")
 	private void markGameComplete(String parentAuthor, Permlink parentPermlink, String gameCompleteLink,
 			Set<String> tags) {
 		while (true) {
@@ -1405,6 +1410,7 @@ public class FarHorizonsApp implements Runnable {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private void markTurnComplete(String parentAuthor, Permlink parentPermlink, String newTurnPermlink,
 			Set<String> tags) {
 		while (true) {
@@ -1424,6 +1430,7 @@ public class FarHorizonsApp implements Runnable {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private void postGameMaps(File gameDir, Permlink parentPermlink, Set<String> tags) {
 		String mapImagesHtml = getMapImagesHtml(gameDir);
 		if (mapImagesHtml.isEmpty()) {
