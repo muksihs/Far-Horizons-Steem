@@ -63,12 +63,14 @@ import eu.bittrade.libs.steemj.exceptions.SteemInvalidTransactionException;
 import eu.bittrade.libs.steemj.exceptions.SteemResponseException;
 import eu.bittrade.libs.steemj.image.upload.SteemJImageUpload;
 import eu.bittrade.libs.steemj.util.SteemJUtils;
+import models.FarHorizonsGameData;
 import models.NewGameInfo;
 import steem.models.CommentMetadata;
 
 public class FarHorizonsApp implements Runnable {
 
-	private static final String KEY_GAME_DATA = "game-data";
+	private static final String KEY_GAME_DATA = "farHorizonsGameData";
+
 	private Map<String, Object> defaultMetadata;
 	private static final String MIME_HTML = "text/html";
 
@@ -769,17 +771,18 @@ public class FarHorizonsApp implements Runnable {
 			JsonMappingException, IOException, InterruptedException, SteemInvalidTransactionException {
 		Set<String> already = new HashSet<>();
 		List<CommentBlogEntry> entries = steemJ.getBlog(account, 0, (short) 100);
-		gameScan: for (CommentBlogEntry entry : entries) {
+		gameScan: for (CommentBlogEntry gameTurnEntry : entries) {
 			// if not by game master, SKIP
-			if (entry.getComment() == null) {
+			if (gameTurnEntry.getComment() == null) {
 				System.err.println("NULL Comment?");
-				continue;
+				continue gameScan;
 			}
-			if (!entry.getComment().getAuthor().equals(account)) {
-				continue;
+			if (!gameTurnEntry.getComment().getAuthor().equals(account)) {
+				continue gameScan;
 			}
 
-			CommentMetadata metadata = json.readValue(entry.getComment().getJsonMetadata(), CommentMetadata.class);
+			CommentMetadata metadata = json.readValue(gameTurnEntry.getComment().getJsonMetadata(),
+					CommentMetadata.class);
 			Set<String> tags = new HashSet<>(Arrays.asList(metadata.getTags()));
 			if (!tags.contains("far-horizons")) {
 				continue gameScan;
@@ -811,6 +814,39 @@ public class FarHorizonsApp implements Runnable {
 			if (gameDir == null) {
 				continue gameScan;
 			}
+			// make sure the post's turn number matches the game data turn number!
+			String turnNumber = getTurnNumber(gameDir);
+			FarHorizonsGameData farHorizonsGameData = metadata.getFarHorizonsGameData();
+			String gameTurnTitle = StringUtils.normalizeSpace(gameTurnEntry.getComment().getTitle());
+			if (farHorizonsGameData == null || farHorizonsGameData.getStartingTurnNumber() == null
+					|| farHorizonsGameData.getStartingTurnNumber().trim().isEmpty()) {
+				//Attempt to extract turn number from post title
+				String lcTitle = gameTurnTitle.toLowerCase();
+				if (!lcTitle.contains("turn")) {
+					System.err.println("UNABLE TO DETERMINE TURN NUMBER!");
+					System.err.println(" - '"+gameTurnTitle+"'");
+					continue gameScan;
+				}
+				String titleTurnNumber = lcTitle.replaceAll(".*turn (\\d+).*", "$1");
+				if (!titleTurnNumber.matches("\\d+")) {
+					System.err.println("MALFORMED TURN NUMBER: "+titleTurnNumber);
+					System.err.println(" - '"+gameTurnTitle+"'");
+					continue gameScan;
+				}
+				if (!titleTurnNumber.equals(turnNumber)) {
+					System.err.println("WRONG TURN NUMBER. Expecting "+turnNumber+" but have "+titleTurnNumber);
+					System.err.println(" - '"+gameTurnTitle+"'");
+					continue gameScan;
+				}
+			} else {
+				//Use turn number from metadata
+				if (!farHorizonsGameData.getStartingTurnNumber().equals(turnNumber)) {
+					System.err.println("WRONG TURN NUMBER. Expecting "+turnNumber+" but have "+farHorizonsGameData.getStartingTurnNumber());
+					System.err.println(" - '"+gameTurnTitle+"'");
+					continue gameScan;
+				}
+			}
+
 			File semGameComplete = new File(gameDir, SEM_GAMECOMPLETE);
 			if (semGameComplete.exists()) {
 				System.out.println("Game over: " + gameId);
@@ -819,9 +855,10 @@ public class FarHorizonsApp implements Runnable {
 
 			Map<String, String> playerInfo = new HashMap<>();
 			Map<String, Permlink> playerPermlinks = new HashMap<>();
-			List<Discussion> discussions = steemJ.getContentReplies(account, entry.getComment().getPermlink());
-			playersScan: for (Discussion discussion : discussions) {
-				String body = discussion.getBody();
+			List<Discussion> playerReplies = steemJ.getContentReplies(account,
+					gameTurnEntry.getComment().getPermlink());
+			playersScan: for (Discussion playerReply : playerReplies) {
+				String body = playerReply.getBody();
 				body = StringUtils.substringBetween(body, "<html>", "</html>");
 				if (body == null || body.trim().isEmpty()) {
 					continue playersScan;
@@ -831,8 +868,8 @@ public class FarHorizonsApp implements Runnable {
 					continue playersScan;
 				}
 				// parse for required fields
-				playerInfo.put(discussion.getAuthor().getName(), body);
-				playerPermlinks.put(discussion.getAuthor().getName(), discussion.getPermlink());
+				playerInfo.put(playerReply.getAuthor().getName(), body);
+				playerPermlinks.put(playerReply.getAuthor().getName(), playerReply.getPermlink());
 			}
 
 			System.out.println("Game " + gameId + " has " + playerInfo.size() + " active players.");
@@ -856,7 +893,7 @@ public class FarHorizonsApp implements Runnable {
 			Random r = new Random();
 			int tn;
 			try {
-				tn = Integer.valueOf(getTurnNumber(gameDir));
+				tn = Integer.valueOf(turnNumber);
 			} catch (NumberFormatException e) {
 				tn = 21;
 			}
@@ -877,7 +914,7 @@ public class FarHorizonsApp implements Runnable {
 				}
 			}
 
-			Date posted = entry.getComment().getCreated().getDateTimeAsDate();
+			Date posted = gameTurnEntry.getComment().getCreated().getDateTimeAsDate();
 
 			if (!allPlayersAccountedFor && !isNewTurnDeadlineOver(posted)) {
 				GregorianCalendar cal = newTurnDeadline(posted);
@@ -1500,14 +1537,9 @@ public class FarHorizonsApp implements Runnable {
 		 */
 		turnMessage.append("<h3>Players</h3>");
 		turnMessage.append("<p>");
-		String playersTxt = FileUtils.readFileToString(new File(gameDir, "_players.tab"), StandardCharsets.UTF_8);
-		String[] players = playersTxt.split("\n");
+		List<String> players = getPlayers(gameDir);
 		for (String player : players) {
-			if (!player.contains("\t")) {
-				continue;
-			}
-			turnMessage.append("@");
-			turnMessage.append(StringEscapeUtils.escapeHtml4(player.split("\t")[1].trim()));
+			turnMessage.append(StringEscapeUtils.escapeHtml4(player));
 			turnMessage.append(" ");
 		}
 		turnMessage.append("</p>");
@@ -1651,6 +1683,19 @@ public class FarHorizonsApp implements Runnable {
 		turnResults.setMessage(turnResultsHtml + "\n");
 		turnResults.setCompressedGameData(secretMessage);
 		return turnResults;
+	}
+
+	private List<String> getPlayers(File gameDir) throws IOException {
+		List<String> playerList = new ArrayList<>();
+		String playersTxt = FileUtils.readFileToString(new File(gameDir, "_players.tab"), StandardCharsets.UTF_8);
+		String[] players = playersTxt.split("\n");
+		for (String player : players) {
+			if (!player.contains("\t")) {
+				continue;
+			}
+			playerList.add("@" + StringEscapeUtils.escapeHtml4(player.split("\t")[1].trim()));
+		}
+		return playerList;
 	}
 
 	private String generateAndSavePayoutResultsHtml(File gameDir, String turn, String permlink, Set<String> payees,
@@ -1804,9 +1849,15 @@ public class FarHorizonsApp implements Runnable {
 		return newTurnDeadline(cal);
 	}
 
+	/**
+	 * 7 days from turn post for submit deadline.
+	 * 
+	 * @param cal
+	 * @return
+	 */
 	private GregorianCalendar newTurnDeadline(GregorianCalendar cal) {
 		cal.setTimeZone(EST5EDT);
-		cal.add(GregorianCalendar.DAY_OF_YEAR, +3);
+		cal.add(GregorianCalendar.DAY_OF_YEAR, +7);
 		int minute = cal.get(GregorianCalendar.MINUTE);
 		// use int math to set to lowest matching quarter hour value;
 		minute /= 15;
@@ -2008,14 +2059,14 @@ public class FarHorizonsApp implements Runnable {
 				URL imgUrl = SteemJImageUpload.uploadImage(uploadAccount, postingKey, imgFile);
 				mapUrlsList.add(imgUrl.toExternalForm());
 			} catch (IOException e) {
-				System.err.println("UPLOADING IMAGE "+imgFile.getAbsolutePath());
+				System.err.println("UPLOADING IMAGE " + imgFile.getAbsolutePath());
 				e.printStackTrace();
 			}
 		}
 		try {
 			FileUtils.writeLines(mapUrlsFile, StandardCharsets.UTF_8.name(), mapUrlsList);
 		} catch (IOException e) {
-			System.err.println("SAVING MAPS URLS "+mapUrlsFile.getAbsolutePath());
+			System.err.println("SAVING MAPS URLS " + mapUrlsFile.getAbsolutePath());
 			e.printStackTrace();
 		}
 		return mapUrlsList;
@@ -2240,7 +2291,11 @@ public class FarHorizonsApp implements Runnable {
 		String turnResultsHtml = turnResult.getMessage();
 		Map<String, Object> metadata = new HashMap<>();
 		metadata.putAll(defaultMetadata);
-		metadata.put(KEY_GAME_DATA, turnResult.getCompressedGameData());
+		FarHorizonsGameData fgd = new FarHorizonsGameData();
+		fgd.setPlayerData(turnResult.getCompressedGameData());
+		fgd.setPlayers(getPlayers(gameDir));
+		fgd.setStartingTurnNumber(getTurnNumber(gameDir));
+		metadata.put(KEY_GAME_DATA, fgd);
 
 		String tn = getTurnNumber(gameDir);
 		String title = generateTurnTitle(gameDir, tn);

@@ -2,8 +2,11 @@ package steem.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import models.FarHorizonsGameData;
+
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class CommentMetadata {
+	private FarHorizonsGameData farHorizonsGameData;
 	private String app;
 	private String canonical;
 	private String format;
@@ -92,5 +95,13 @@ public class CommentMetadata {
 
 	public void setCommunity(String community) {
 		this.community = community;
+	}
+
+	public FarHorizonsGameData getFarHorizonsGameData() {
+		return farHorizonsGameData;
+	}
+
+	public void setFarHorizonsGameData(FarHorizonsGameData farHorizonsGameData) {
+		this.farHorizonsGameData = farHorizonsGameData;
 	}
 }
