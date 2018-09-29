@@ -71,7 +71,7 @@ import models.NewGameInfo;
 import steem.models.CommentMetadata;
 
 public class FarHorizonsApp implements Runnable {
-	
+
 	private static final BigDecimal MIN_RCS_TO_RUN = new BigDecimal("150000000000");
 
 	private static final String KEY_GAME_DATA = "farHorizonsGameData";
@@ -119,18 +119,19 @@ public class FarHorizonsApp implements Runnable {
 		defaultMetadata = new LinkedHashMap<>();
 		defaultMetadata.put("app", "FarHorizons/20180831-00");
 	}
-	
+
 	boolean doRcAbort() throws JsonParseException, JsonMappingException, IOException {
 		RcAccounts rcs = SteemRcApi.getRc(botAccount);
 		ArrayList<RcAccount> rcAccounts = rcs.getRcAccounts();
 		if (rcAccounts.isEmpty()) {
 			return true;
 		}
-		for (RcAccount rc: rcAccounts) {
-			if (rc.getEstimatedMana().compareTo(MIN_RCS_TO_RUN)>0) {
+		for (RcAccount rc : rcAccounts) {
+			if (rc.getEstimatedMana().compareTo(MIN_RCS_TO_RUN) > 0) {
 				return false;
 			}
-			System.out.println("--- Available RCs "+NumberFormat.getInstance().format(rc.getEstimatedMana())+" < "+NumberFormat.getInstance().format(MIN_RCS_TO_RUN));
+			System.out.println("--- Available RCs " + NumberFormat.getInstance().format(rc.getEstimatedMana()) + " < "
+					+ NumberFormat.getInstance().format(MIN_RCS_TO_RUN));
 		}
 		return true;
 	}
@@ -234,16 +235,19 @@ public class FarHorizonsApp implements Runnable {
 			String arg = iArgs.next();
 			if (arg.equals("--get-rcs")) {
 				RcAccounts rcs = SteemRcApi.getRc(botAccount);
-				for (RcAccount rc: rcs.getRcAccounts()) {
-					System.out.println(rc.getAccount()+": "+rc.getRcManabar().getCurrentMana().toPlainString()+" > "+rc.getEstimatedMana().toPlainString()+" > "+rc.getMaxRc().toPlainString());
+				for (RcAccount rc : rcs.getRcAccounts()) {
+					System.out.println(rc.getAccount() + ": " + rc.getRcManabar().getCurrentMana().toPlainString()
+							+ " > " + rc.getEstimatedMana().toPlainString() + " > " + rc.getMaxRc().toPlainString());
 				}
 				rcs = SteemRcApi.getRc(new AccountName("muksihs"));
-				for (RcAccount rc: rcs.getRcAccounts()) {
-					System.out.println(rc.getAccount()+": "+rc.getRcManabar().getCurrentMana().toPlainString()+" > "+rc.getEstimatedMana().toPlainString()+" > "+rc.getMaxRc().toPlainString());
+				for (RcAccount rc : rcs.getRcAccounts()) {
+					System.out.println(rc.getAccount() + ": " + rc.getRcManabar().getCurrentMana().toPlainString()
+							+ " > " + rc.getEstimatedMana().toPlainString() + " > " + rc.getMaxRc().toPlainString());
 				}
 				rcs = SteemRcApi.getRc(new AccountName("magali"));
-				for (RcAccount rc: rcs.getRcAccounts()) {
-					System.out.println(rc.getAccount()+": "+rc.getRcManabar().getCurrentMana().toPlainString()+" > "+rc.getEstimatedMana().toPlainString()+" > "+rc.getMaxRc().toPlainString());
+				for (RcAccount rc : rcs.getRcAccounts()) {
+					System.out.println(rc.getAccount() + ": " + rc.getRcManabar().getCurrentMana().toPlainString()
+							+ " > " + rc.getEstimatedMana().toPlainString() + " > " + rc.getMaxRc().toPlainString());
 				}
 				continue;
 			}
@@ -659,11 +663,12 @@ public class FarHorizonsApp implements Runnable {
 		 * do NOT use game id in these tags, it will confuse the game client!
 		 */
 		String[] tags = new String[5];
-		tags[0] = "far-horizons";
-		tags[1] = "strategy-game";
-		tags[2] = "steem-game";
-		tags[3] = "games";
-		tags[4] = "giveaway";
+		tags[0] = "playbypost";
+		tags[1] = "far-horizons";
+		tags[2] = "strategy-game";
+		tags[3] = "steem-game";
+		tags[4] = "games";
+
 		while (true) {
 			try {
 				waitIfLowBandwidth();
@@ -857,29 +862,30 @@ public class FarHorizonsApp implements Runnable {
 			String gameTurnTitle = StringUtils.normalizeSpace(gameTurnEntry.getComment().getTitle());
 			if (farHorizonsGameData == null || farHorizonsGameData.getStartingTurnNumber() == null
 					|| farHorizonsGameData.getStartingTurnNumber().trim().isEmpty()) {
-				//Attempt to extract turn number from post title
+				// Attempt to extract turn number from post title
 				String lcTitle = gameTurnTitle.toLowerCase();
 				if (!lcTitle.contains("turn")) {
 					System.err.println("UNABLE TO DETERMINE TURN NUMBER!");
-					System.err.println(" - '"+gameTurnTitle+"'");
+					System.err.println(" - '" + gameTurnTitle + "'");
 					continue gameScan;
 				}
 				String titleTurnNumber = lcTitle.replaceAll(".*turn (\\d+).*", "$1");
 				if (!titleTurnNumber.matches("\\d+")) {
-					System.err.println("MALFORMED TURN NUMBER: "+titleTurnNumber);
-					System.err.println(" - '"+gameTurnTitle+"'");
+					System.err.println("MALFORMED TURN NUMBER: " + titleTurnNumber);
+					System.err.println(" - '" + gameTurnTitle + "'");
 					continue gameScan;
 				}
 				if (!titleTurnNumber.equals(turnNumber)) {
-					System.err.println("WRONG TURN NUMBER. Expecting "+turnNumber+" but have "+titleTurnNumber);
-					System.err.println(" - '"+gameTurnTitle+"'");
+					System.err.println("WRONG TURN NUMBER. Expecting " + turnNumber + " but have " + titleTurnNumber);
+					System.err.println(" - '" + gameTurnTitle + "'");
 					continue gameScan;
 				}
 			} else {
-				//Use turn number from metadata
+				// Use turn number from metadata
 				if (!farHorizonsGameData.getStartingTurnNumber().equals(turnNumber)) {
-					System.err.println("WRONG TURN NUMBER. Expecting "+turnNumber+" but have "+farHorizonsGameData.getStartingTurnNumber());
-					System.err.println(" - '"+gameTurnTitle+"'");
+					System.err.println("WRONG TURN NUMBER. Expecting " + turnNumber + " but have "
+							+ farHorizonsGameData.getStartingTurnNumber());
+					System.err.println(" - '" + gameTurnTitle + "'");
 					continue gameScan;
 				}
 			}
@@ -1084,10 +1090,10 @@ public class FarHorizonsApp implements Runnable {
 	private void doAnnounceGamePost() throws IOException {
 		NewGameInviteInfo info = generateNewGameInviteHtml();
 		String[] tags = new String[5];
-		tags[0] = "far-horizons";
-		tags[1] = "games";
-		tags[2] = "new-game";
-		tags[3] = "contest";
+		tags[0] = "playbypost";
+		tags[1] = "far-horizons";
+		tags[2] = "games";
+		tags[3] = "new-game";
 		tags[4] = info.getGameDir().getName();
 		while (true) {
 			waitIfLowBandwidth();
@@ -2173,10 +2179,10 @@ public class FarHorizonsApp implements Runnable {
 		String tn = getTurnNumber(gameDir);
 		String title = generateGameCompleteTitle(gameDir, tn);
 		String[] tags = new String[5];
-		tags[0] = "far-horizons";
-		tags[1] = gameDir.getName();
-		tags[2] = "games";
-		tags[3] = "freerewards";
+		tags[0] = "playbypost";
+		tags[1] = "far-horizons";
+		tags[2] = gameDir.getName();
+		tags[3] = "games";
 		tags[4] = "contest";
 		Permlink parentPermlink;
 		AccountName parentAuthor;
@@ -2337,10 +2343,10 @@ public class FarHorizonsApp implements Runnable {
 		String tn = getTurnNumber(gameDir);
 		String title = generateTurnTitle(gameDir, tn);
 		String[] tags = new String[5];
-		tags[0] = "far-horizons";
-		tags[1] = gameDir.getName();
-		tags[2] = "games";
-		tags[3] = "freerewards";
+		tags[0] = "playbypost";
+		tags[1] = "far-horizons";
+		tags[2] = gameDir.getName();
+		tags[3] = "games";
 		tags[4] = "contest";
 		while (true) {
 			boolean isUpdate = false;
