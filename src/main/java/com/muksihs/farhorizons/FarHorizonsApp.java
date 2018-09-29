@@ -38,6 +38,9 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.muksihs.farhorizons.steemapi.RcAccount;
+import com.muksihs.farhorizons.steemapi.RcAccounts;
+import com.muksihs.farhorizons.steemapi.SteemRcApi;
 
 import blazing.chain.LZSEncoding;
 import eu.bittrade.libs.steemj.apis.database.models.state.Discussion;
@@ -68,6 +71,8 @@ import models.NewGameInfo;
 import steem.models.CommentMetadata;
 
 public class FarHorizonsApp implements Runnable {
+	
+	private static final BigDecimal MIN_RCS_TO_RUN = new BigDecimal("150000000000");
 
 	private static final String KEY_GAME_DATA = "farHorizonsGameData";
 
@@ -106,13 +111,28 @@ public class FarHorizonsApp implements Runnable {
 
 	private final String[] args;
 	private FarHorizonsSteemJ steemJ;
-	private AccountName account;
+	private AccountName botAccount;
 	private ObjectMapper json;
 
 	public FarHorizonsApp(String[] args) {
 		this.args = args;
 		defaultMetadata = new LinkedHashMap<>();
 		defaultMetadata.put("app", "FarHorizons/20180831-00");
+	}
+	
+	boolean doRcAbort() throws JsonParseException, JsonMappingException, IOException {
+		RcAccounts rcs = SteemRcApi.getRc(botAccount);
+		ArrayList<RcAccount> rcAccounts = rcs.getRcAccounts();
+		if (rcAccounts.isEmpty()) {
+			return true;
+		}
+		for (RcAccount rc: rcAccounts) {
+			if (rc.getEstimatedMana().compareTo(MIN_RCS_TO_RUN)>0) {
+				return false;
+			}
+			System.out.println("--- Available RCs "+NumberFormat.getInstance().format(rc.getEstimatedMana())+" < "+NumberFormat.getInstance().format(MIN_RCS_TO_RUN));
+		}
+		return true;
 	}
 
 	private void loadSteemAccountInformation() throws FileNotFoundException, IOException {
@@ -175,8 +195,8 @@ public class FarHorizonsApp implements Runnable {
 		myConfig.setResponseTimeout(1000);
 		// Maximize participation rewards
 		myConfig.setSteemJWeight((short) 0);
-		account = new AccountName(this.accountName);
-		myConfig.setDefaultAccount(account);
+		botAccount = new AccountName(this.accountName);
+		myConfig.setDefaultAccount(botAccount);
 		List<ImmutablePair<PrivateKeyType, String>> privateKeys = new ArrayList<>();
 		if (!this.activeKey.trim().isEmpty()) {
 			privateKeys.add(new ImmutablePair<>(PrivateKeyType.ACTIVE, this.activeKey));
@@ -212,6 +232,21 @@ public class FarHorizonsApp implements Runnable {
 		Iterator<String> iArgs = Arrays.asList(args).iterator();
 		while (iArgs.hasNext()) {
 			String arg = iArgs.next();
+			if (arg.equals("--get-rcs")) {
+				RcAccounts rcs = SteemRcApi.getRc(botAccount);
+				for (RcAccount rc: rcs.getRcAccounts()) {
+					System.out.println(rc.getAccount()+": "+rc.getRcManabar().getCurrentMana().toPlainString()+" > "+rc.getEstimatedMana().toPlainString()+" > "+rc.getMaxRc().toPlainString());
+				}
+				rcs = SteemRcApi.getRc(new AccountName("muksihs"));
+				for (RcAccount rc: rcs.getRcAccounts()) {
+					System.out.println(rc.getAccount()+": "+rc.getRcManabar().getCurrentMana().toPlainString()+" > "+rc.getEstimatedMana().toPlainString()+" > "+rc.getMaxRc().toPlainString());
+				}
+				rcs = SteemRcApi.getRc(new AccountName("magali"));
+				for (RcAccount rc: rcs.getRcAccounts()) {
+					System.out.println(rc.getAccount()+": "+rc.getRcManabar().getCurrentMana().toPlainString()+" > "+rc.getEstimatedMana().toPlainString()+" > "+rc.getMaxRc().toPlainString());
+				}
+				continue;
+			}
 			if (arg.equals("--test-deadline")) {
 				newGameDeadline(new GregorianCalendar());
 				continue;
@@ -222,19 +257,23 @@ public class FarHorizonsApp implements Runnable {
 				continue;
 			}
 			if (arg.equals("--start-game")) {
-				if (isLowBandwidth()) {
-					System.err.println("Low bandwidth. No start game check. "
-							+ NumberFormat.getInstance().format((100d - 100d * getBandwidthUsedPercent())) + "%");
+				if (doRcAbort()) {
 					continue;
 				}
 				doProcessAnnounceReplies();
 				continue;
 			}
 			if (arg.equals("--upvote-check")) {
+				if (doRcAbort()) {
+					continue;
+				}
 				doUpvoteCheck();
 				continue;
 			}
 			if (arg.equals("--announce-game")) {
+				if (doRcAbort()) {
+					continue;
+				}
 				doAnnounceGamePost();
 				continue;
 			}
@@ -247,15 +286,15 @@ public class FarHorizonsApp implements Runnable {
 				continue;
 			}
 			if (arg.equals("--run-game")) {
-				if (isLowBandwidth()) {
-					System.err.println("Low bandwidth. No run game. "
-							+ NumberFormat.getInstance().format((100d - 100d * getBandwidthUsedPercent())) + "%");
+				if (doRcAbort()) {
 					continue;
 				}
-				System.out.println("-> doUpvoteCheck");
-				doUpvoteCheck();
 				System.out.println("-> doRunGameTurn");
 				doRunGameTurn();
+				if (!doRcAbort()) {
+					System.out.println("-> doUpvoteCheck");
+					doUpvoteCheck();
+				}
 				continue;
 			}
 
@@ -265,9 +304,7 @@ public class FarHorizonsApp implements Runnable {
 			}
 
 			if (arg.equals("--payouts")) {
-				if (isLowBandwidth()) {
-					System.err.println("Low bandwidth. No payouts. "
-							+ NumberFormat.getInstance().format((100d - 100d * getBandwidthUsedPercent())) + "%");
+				if (doRcAbort()) {
 					continue;
 				}
 				doGamePayouts();
@@ -297,7 +334,7 @@ public class FarHorizonsApp implements Runnable {
 		List<BlogEntry> entriesForUpvote = new ArrayList<>();
 		for (int retries = 0; retries < 10; retries++) {
 			try {
-				entriesForUpvote = steemJ.getBlogEntries(account, 0, (short) 100);
+				entriesForUpvote = steemJ.getBlogEntries(botAccount, 0, (short) 100);
 			} catch (SteemResponseException e1) {
 				e1.printStackTrace();
 				break;
@@ -305,7 +342,7 @@ public class FarHorizonsApp implements Runnable {
 		}
 		forBlogEntries: for (BlogEntry entry : entriesForUpvote) {
 			// if not by game master, SKIP
-			if (!entry.getAuthor().equals(account)) {
+			if (!entry.getAuthor().equals(botAccount)) {
 				continue;
 			}
 			// stop up voting if our voting power drops too low
@@ -317,7 +354,7 @@ public class FarHorizonsApp implements Runnable {
 			Discussion article = null;
 			for (int retries = 0; retries < 10; retries++) {
 				try {
-					article = steemJ.getContent(account, entry.getPermlink());
+					article = steemJ.getContent(botAccount, entry.getPermlink());
 					break;
 				} catch (SteemResponseException e1) {
 					if (retries == 9) {
@@ -351,7 +388,7 @@ public class FarHorizonsApp implements Runnable {
 			}
 			List<VoteState> votes = article.getActiveVotes();
 			for (VoteState vote : votes) {
-				if (vote.getVoter().equals(account)) {
+				if (vote.getVoter().equals(botAccount)) {
 					continue forBlogEntries;
 				}
 			}
@@ -360,7 +397,7 @@ public class FarHorizonsApp implements Runnable {
 			try {
 				System.out.println("Upvoting: " + votingPower + "%");
 				System.out.println(article.getTitle());
-				steemJ.vote(account, article.getPermlink(), (short) 100);
+				steemJ.vote(botAccount, article.getPermlink(), (short) 100);
 				sleep(3500);
 			} catch (Exception e) {
 				// ignore any up vote errors
@@ -375,7 +412,7 @@ public class FarHorizonsApp implements Runnable {
 			JsonParseException, JsonMappingException, IOException, InterruptedException {
 		waitIfLowBandwidth();
 		steemJ.claimRewards();
-		Map<Integer, AppliedOperation> history = steemJ.getAccountHistory(account, -1, 1000);
+		Map<Integer, AppliedOperation> history = steemJ.getAccountHistory(botAccount, -1, 1000);
 		Set<String> alreadyPaid = new HashSet<>();
 
 		ArrayList<Integer> keys = new ArrayList<>(history.keySet());
@@ -404,13 +441,13 @@ public class FarHorizonsApp implements Runnable {
 				continue history;
 			}
 			AuthorRewardOperation aro = (AuthorRewardOperation) op.getOp();
-			Discussion discussion = steemJ.getContent(account, aro.getPermlink());
+			Discussion discussion = steemJ.getContent(botAccount, aro.getPermlink());
 			String turn = "";
 			if (discussion.getTitle().matches(".*Turn \\d+.*")) {
 				turn = discussion.getTitle().replaceAll(".*Turn (\\d+).*", "$1");
 			}
 			// if not by game master, SKIP
-			if (!discussion.getAuthor().equals(account)) {
+			if (!discussion.getAuthor().equals(botAccount)) {
 				continue;
 			}
 
@@ -482,7 +519,7 @@ public class FarHorizonsApp implements Runnable {
 
 			GregorianCalendar deadline = newTurnDeadline(discussion.getCreated().getDateTimeAsDate());
 			// only pay players who actually played
-			List<Discussion> replies = steemJ.getContentReplies(account, discussion.getPermlink());
+			List<Discussion> replies = steemJ.getContentReplies(botAccount, discussion.getPermlink());
 			Set<String> activePlayers = new HashSet<>();
 			playersScan: for (Discussion reply : replies) {
 				String name = reply.getAuthor().getName();
@@ -590,7 +627,7 @@ public class FarHorizonsApp implements Runnable {
 				} else {
 					System.out.println(" - Paying " + player + " " + payout.toPlainString() + currency);
 				}
-				TransferOperation transfer = new TransferOperation(account, to, amount, memo);
+				TransferOperation transfer = new TransferOperation(botAccount, to, amount, memo);
 				try {
 					doSteemOps(transfer);
 				} catch (SteemCommunicationException | SteemResponseException | SteemInvalidTransactionException e) {
@@ -612,7 +649,7 @@ public class FarHorizonsApp implements Runnable {
 
 		String title = generatePayoutTitle(gameDir, pool, turn);
 		Permlink permlink = new Permlink(SteemJUtils.createPermlinkString(title));
-		Discussion maybeAlready = steemJ.getContent(account, permlink);
+		Discussion maybeAlready = steemJ.getContent(botAccount, permlink);
 		if (maybeAlready != null && !isBlank(maybeAlready.getTitle())) {
 			System.out.println(" - Already posted: " + maybeAlready.getTitle());
 			return;
@@ -667,10 +704,10 @@ public class FarHorizonsApp implements Runnable {
 	private void doGameCleanup() throws SteemCommunicationException, SteemResponseException, JsonParseException,
 			JsonMappingException, IOException, InterruptedException {
 		Set<String> already = new HashSet<>();
-		List<CommentBlogEntry> entries = steemJ.getBlog(account, 0, (short) 100);
+		List<CommentBlogEntry> entries = steemJ.getBlog(botAccount, 0, (short) 100);
 		gameScan: for (CommentBlogEntry entry : entries) {
 			// if not by game master, SKIP
-			if (!entry.getComment().getAuthor().equals(account)) {
+			if (!entry.getComment().getAuthor().equals(botAccount)) {
 				// System.out.println("- SKIPPING POST BY : " +
 				// entry.getComment().getAuthor().getName());
 				continue;
@@ -770,14 +807,14 @@ public class FarHorizonsApp implements Runnable {
 	private void doRunGameTurn() throws SteemCommunicationException, SteemResponseException, JsonParseException,
 			JsonMappingException, IOException, InterruptedException, SteemInvalidTransactionException {
 		Set<String> already = new HashSet<>();
-		List<CommentBlogEntry> entries = steemJ.getBlog(account, 0, (short) 100);
+		List<CommentBlogEntry> entries = steemJ.getBlog(botAccount, 0, (short) 100);
 		gameScan: for (CommentBlogEntry gameTurnEntry : entries) {
 			// if not by game master, SKIP
 			if (gameTurnEntry.getComment() == null) {
 				System.err.println("NULL Comment?");
 				continue gameScan;
 			}
-			if (!gameTurnEntry.getComment().getAuthor().equals(account)) {
+			if (!gameTurnEntry.getComment().getAuthor().equals(botAccount)) {
 				continue gameScan;
 			}
 
@@ -855,7 +892,7 @@ public class FarHorizonsApp implements Runnable {
 
 			Map<String, String> playerInfo = new HashMap<>();
 			Map<String, Permlink> playerPermlinks = new HashMap<>();
-			List<Discussion> playerReplies = steemJ.getContentReplies(account,
+			List<Discussion> playerReplies = steemJ.getContentReplies(botAccount,
 					gameTurnEntry.getComment().getPermlink());
 			playersScan: for (Discussion playerReply : playerReplies) {
 				String body = playerReply.getBody();
@@ -999,10 +1036,10 @@ public class FarHorizonsApp implements Runnable {
 
 	private void doCreateMaps() throws SteemCommunicationException, SteemResponseException, JsonParseException,
 			JsonMappingException, IOException, InterruptedException {
-		List<CommentBlogEntry> entries = steemJ.getBlog(account, 0, (short) 100);
+		List<CommentBlogEntry> entries = steemJ.getBlog(botAccount, 0, (short) 100);
 		newGameScan: for (CommentBlogEntry entry : entries) {
 			// if not by game master, SKIP
-			if (!entry.getComment().getAuthor().equals(account)) {
+			if (!entry.getComment().getAuthor().equals(botAccount)) {
 				continue;
 			}
 
@@ -1073,9 +1110,9 @@ public class FarHorizonsApp implements Runnable {
 	private void doCreateHtmlResultFiles() throws SteemCommunicationException, SteemResponseException,
 			JsonParseException, JsonMappingException, IOException, InterruptedException {
 		Set<String> already = new HashSet<>();
-		List<CommentBlogEntry> entries = steemJ.getBlog(account, 0, (short) 100);
+		List<CommentBlogEntry> entries = steemJ.getBlog(botAccount, 0, (short) 100);
 		gameScan: for (CommentBlogEntry entry : entries) {
-			if (!entry.getComment().getAuthor().equals(account)) {
+			if (!entry.getComment().getAuthor().equals(botAccount)) {
 				continue;
 			}
 			CommentMetadata metadata = json.readValue(entry.getComment().getJsonMetadata(), CommentMetadata.class);
@@ -1116,7 +1153,7 @@ public class FarHorizonsApp implements Runnable {
 	private void doProcessAnnounceReplies()
 			throws SteemCommunicationException, SteemResponseException, JsonParseException, JsonMappingException,
 			IOException, InterruptedException, SteemInvalidTransactionException {
-		List<CommentBlogEntry> entries = steemJ.getBlog(account, 0, (short) 100);
+		List<CommentBlogEntry> entries = steemJ.getBlog(botAccount, 0, (short) 100);
 		Set<String> already = new HashSet<>();
 		newGameScan: for (CommentBlogEntry entry : entries) {
 			if (entry.getComment() == null) {
@@ -1124,7 +1161,7 @@ public class FarHorizonsApp implements Runnable {
 				continue;
 			}
 			// if not by game master, SKIP
-			if (!entry.getComment().getAuthor().equals(account)) {
+			if (!entry.getComment().getAuthor().equals(botAccount)) {
 				// System.out.println("- SKIPPING POST BY : " +
 				// entry.getComment().getAuthor().getName());
 				continue;
@@ -1169,7 +1206,7 @@ public class FarHorizonsApp implements Runnable {
 
 			Map<String, NewGameInfo> playerInfo = new HashMap<>();
 			Map<String, Permlink> playerPermlinks = new HashMap<>();
-			List<Discussion> discussions = steemJ.getContentReplies(account, entry.getComment().getPermlink());
+			List<Discussion> discussions = steemJ.getContentReplies(botAccount, entry.getComment().getPermlink());
 			boolean gameFull = false;
 			newPlayersScan: for (Discussion discussion : discussions) {
 				String body = discussion.getBody();
@@ -1483,7 +1520,7 @@ public class FarHorizonsApp implements Runnable {
 			waitIfLowBandwidth();
 			sleep(25l * 1000l);// 25 seconds
 			try {
-				steemJ.createComment(account, parentPermlink, sb.toString(), tags.toArray(new String[0]), MIME_HTML,
+				steemJ.createComment(botAccount, parentPermlink, sb.toString(), tags.toArray(new String[0]), MIME_HTML,
 						defaultMetadata);
 				System.out.println("MAPS POSTED! [" + parentPermlink.getLink() + "]");
 				return;
@@ -2309,7 +2346,7 @@ public class FarHorizonsApp implements Runnable {
 			boolean isUpdate = false;
 			Permlink permlink = new Permlink(SteemJUtils.createPermlinkString(title));
 			try {
-				Discussion content = steemJ.getContent(account, permlink);
+				Discussion content = steemJ.getContent(botAccount, permlink);
 				if (content != null && content.getBody() != null && content.getBody().trim().startsWith("<html")) {
 					isUpdate = true;
 				}
@@ -2415,7 +2452,7 @@ public class FarHorizonsApp implements Runnable {
 	private ExtendedAccount getExtendedAccount() throws SteemCommunicationException, SteemResponseException {
 		for (int retries = 0; retries < 10; retries++) {
 			try {
-				List<ExtendedAccount> accounts = steemJ.getAccounts(Arrays.asList(account));
+				List<ExtendedAccount> accounts = steemJ.getAccounts(Arrays.asList(botAccount));
 				if (accounts.isEmpty()) {
 					return null;
 				}
