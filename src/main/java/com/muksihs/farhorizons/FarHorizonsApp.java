@@ -1916,7 +1916,7 @@ public class FarHorizonsApp implements Runnable {
 	 */
 	private GregorianCalendar newTurnDeadline(GregorianCalendar cal) {
 		cal.setTimeZone(EST5EDT);
-		cal.add(GregorianCalendar.DAY_OF_YEAR, +7);
+		cal.add(GregorianCalendar.DAY_OF_YEAR, +3);
 		int minute = cal.get(GregorianCalendar.MINUTE);
 		// use int math to set to lowest matching quarter hour value;
 		minute /= 15;
