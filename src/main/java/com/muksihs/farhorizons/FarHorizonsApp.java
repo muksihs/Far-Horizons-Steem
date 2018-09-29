@@ -72,7 +72,7 @@ import steem.models.CommentMetadata;
 
 public class FarHorizonsApp implements Runnable {
 
-	private static final BigDecimal MIN_RCS_TO_RUN = new BigDecimal("15000000000");
+	private static final BigDecimal MIN_RCS_TO_RUN = new BigDecimal("18873834001");
 
 	private static final String KEY_GAME_DATA = "farHorizonsGameData";
 
