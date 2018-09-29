@@ -72,7 +72,7 @@ import steem.models.CommentMetadata;
 
 public class FarHorizonsApp implements Runnable {
 
-	private static final BigDecimal MIN_RCS_TO_RUN = new BigDecimal("150000000000");
+	private static final BigDecimal MIN_RCS_TO_RUN = new BigDecimal("15000000000");
 
 	private static final String KEY_GAME_DATA = "farHorizonsGameData";
 
@@ -1633,7 +1633,7 @@ public class FarHorizonsApp implements Runnable {
 		 * For public reports.
 		 */
 		StringBuilder publicInfo = new StringBuilder();
-		for (String player : players) {
+		for (String player : getPlayersRecords(gameDir)) {
 			if (!player.contains("\t")) {
 				continue;
 			}
@@ -1642,8 +1642,11 @@ public class FarHorizonsApp implements Runnable {
 				speciesNo = "0" + speciesNo;
 			}
 			String playerName = player.split("\t")[1].trim();
-			String playerReport = FileUtils.readFileToString(
-					new File(gameDir, "reports/sp" + speciesNo + ".rpt.t" + tn), StandardCharsets.UTF_8);
+			File reportFile = new File(gameDir, "reports/sp" + speciesNo + ".rpt.t" + tn);
+			if (!reportFile.canRead()) {
+				System.err.println("CAN'T READ "+reportFile.getAbsolutePath());
+			}
+			String playerReport = FileUtils.readFileToString(reportFile, StandardCharsets.UTF_8);
 			transmission.append("<p>");
 			transmission.append("@");
 			transmission.append(StringEscapeUtils.escapeHtml4(playerName));
@@ -1737,6 +1740,19 @@ public class FarHorizonsApp implements Runnable {
 				continue;
 			}
 			playerList.add("@" + StringEscapeUtils.escapeHtml4(player.split("\t")[1].trim()));
+		}
+		return playerList;
+	}
+
+	private List<String> getPlayersRecords(File gameDir) throws IOException {
+		List<String> playerList = new ArrayList<>();
+		String playersTxt = FileUtils.readFileToString(new File(gameDir, "_players.tab"), StandardCharsets.UTF_8);
+		String[] players = playersTxt.split("\n");
+		for (String player : players) {
+			if (!player.contains("\t")) {
+				continue;
+			}
+			playerList.add(player);
 		}
 		return playerList;
 	}
@@ -2386,7 +2402,7 @@ public class FarHorizonsApp implements Runnable {
 	}
 
 	private String generateTurnTitle(File gameDir, String tn) {
-		String title = "Far Horizons Steem - Start of Turn " + tn + " - For Game "
+		String title = "Far Horizons Steem - Start of Turn " + tn + " -- For Game "
 				+ gameDir.getName().replaceAll("[^\\d]", "");
 		return title;
 	}
