@@ -1042,7 +1042,7 @@ public class FarHorizonsApp implements Runnable {
 		}
 	}
 
-	private String basicUnescape(String text) {
+	public static String basicUnescape(String text) {
 		return text.replace("&gt;", ">").replace("&lt;", "<").replace("&amp;", "&");
 	}
 
@@ -2137,7 +2137,7 @@ public class FarHorizonsApp implements Runnable {
 		return mapUrlsList;
 	}
 
-	private static String basicEscape(String text) {
+	public static String basicEscape(String text) {
 		return text.replace("&", "&amp;").replace("<", "&lt;").replaceAll(">", "&gt;");
 	}
 
