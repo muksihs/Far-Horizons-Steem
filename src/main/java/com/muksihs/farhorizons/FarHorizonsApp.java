@@ -355,8 +355,13 @@ public class FarHorizonsApp implements Runnable {
 			if (!entry.getAuthor().equals(botAccount)) {
 				continue;
 			}
+			ExtendedAccount extendedBotAccount = getExtendedAccount(botAccount);
+			if (extendedBotAccount==null) {
+				continue forBlogEntries;
+			}
 			// stop up voting if our voting power drops too low
-			BigDecimal votingPower = new BigDecimal(getExtendedAccount().getVotingPower()).movePointLeft(2);
+			BigDecimal votingPower = getEstimateVote(extendedBotAccount);
+			// stop up voting if our voting power drops too low
 			if (votingPower.compareTo(voteThreshold) < 0) {
 				System.out.println("Not up voting. Power " + votingPower + "% < " + voteThreshold + "%");
 				break forBlogEntries;
@@ -416,7 +421,45 @@ public class FarHorizonsApp implements Runnable {
 			}
 		}
 	}
+	
+	private ExtendedAccount getExtendedAccount(AccountName accountName) throws SteemCommunicationException, SteemResponseException {
+		List<ExtendedAccount> accounts = steemJ.getAccounts(Arrays.asList(accountName));
+		for (ExtendedAccount account : accounts) {
+			if (account.getName().equals(botAccount)) {
+				return account;
+			}
+		}
+		return null;
+	}
 
+	
+	/**
+	 * Get Estimated voting power as a percentage x 100.
+	 * @param lastVoteTimeSecs
+	 * @param lastVotingPower
+	 * @return
+	 */
+	public static BigDecimal getEstimateVote(ExtendedAccount account) {
+		return getEstimateVote(account.getLastVoteTime().getDateTimeAsInt(), account.getVotingPower());
+	}
+	/**
+	 * Get Estimated voting power as a percentage x 100.
+	 * @param lastVoteTimeSecs
+	 * @param lastVotingPower
+	 * @return
+	 */
+	public static BigDecimal getEstimateVote(int lastVoteTimeSecs, int lastVotingPower) {
+		BigDecimal maxVotingPower = BigDecimal.valueOf(10000);
+		BigDecimal now = new BigDecimal(System.currentTimeMillis()/1000l);
+		BigDecimal lastVoteTime = new BigDecimal(lastVoteTimeSecs);
+		BigDecimal elapsedTime = now.subtract(lastVoteTime);
+		BigDecimal percent = elapsedTime.divide(FIVE_DAYS_SECONDS, 3, RoundingMode.DOWN);
+		BigDecimal votingPowerGained = maxVotingPower.multiply(percent).setScale(0, RoundingMode.DOWN);
+		BigDecimal estimatedVotingPower = new BigDecimal(lastVotingPower).add(votingPowerGained);
+		return estimatedVotingPower.min(maxVotingPower).movePointLeft(2);
+	}
+	public static final BigDecimal FIVE_DAYS_SECONDS = new BigDecimal((long) 5 * 24 * 60 * 60);
+	
 	private void doGamePayouts()
 			throws SteemCommunicationException, SteemResponseException, SteemInvalidTransactionException,
 			JsonParseException, JsonMappingException, IOException, InterruptedException {
