@@ -43,6 +43,7 @@ import com.muksihs.farhorizons.steemapi.RcAccounts;
 import com.muksihs.farhorizons.steemapi.SteemRcApi;
 
 import blazing.chain.LZSEncoding;
+import eu.bittrade.libs.steemj.apis.database.models.state.Comment;
 import eu.bittrade.libs.steemj.apis.database.models.state.Discussion;
 import eu.bittrade.libs.steemj.apis.follow.model.BlogEntry;
 import eu.bittrade.libs.steemj.apis.follow.model.CommentBlogEntry;
@@ -863,6 +864,12 @@ public class FarHorizonsApp implements Runnable {
 			JsonMappingException, IOException, InterruptedException, SteemInvalidTransactionException {
 		Set<String> already = new HashSet<>();
 		List<CommentBlogEntry> entries = steemJ.getBlog(botAccount, 0, (short) 100);
+		List<CommentBlogEntry> activeGames = new ArrayList<>();
+		Map<Integer, CommentMetadata> metadataMap = new HashMap<>();
+		Map<Integer, String> gameIdMap = new HashMap<>();
+		Map<Integer, File> gameDirMap = new HashMap<>();
+		Map<Integer, Set<String>> tagsMap = new HashMap<>();
+		Map<Integer, String> turnNoMap = new HashMap<>();
 		gameScan: for (CommentBlogEntry gameTurnEntry : entries) {
 			// if not by game master, SKIP
 			if (gameTurnEntry.getComment() == null) {
@@ -914,6 +921,9 @@ public class FarHorizonsApp implements Runnable {
 					|| farHorizonsGameData.getStartingTurnNumber().trim().isEmpty()) {
 				// Attempt to extract turn number from post title
 				String lcTitle = gameTurnTitle.toLowerCase();
+				if (lcTitle.contains("game complete")) {
+					continue gameScan;
+				}
 				if (!lcTitle.contains("turn")) {
 					System.err.println("UNABLE TO DETERMINE TURN NUMBER!");
 					System.err.println(" - '" + gameTurnTitle + "'");
@@ -945,11 +955,39 @@ public class FarHorizonsApp implements Runnable {
 				System.out.println("Game over: " + gameId);
 				continue gameScan;
 			}
-
+			activeGames.add(gameTurnEntry);
+			int entryId = gameTurnEntry.getEntryId();
+			metadataMap.put(entryId, metadata);
+			gameIdMap.put(entryId, gameId);
+			gameDirMap.put(entryId, gameDir);
+			tagsMap.put(entryId, tags);
+			turnNoMap.put(entryId, turnNumber);
+		}
+		/*
+		 * sort from oldest to newest to make sure oldest games are processed in case of RC drop
+		 */
+		Collections.sort(activeGames, (a,b)->a.getComment().getCreated().getDateTimeAsDate().compareTo(b.getComment().getCreated().getDateTimeAsDate()));
+		/*
+		 * process the game until RCs run out
+		 */
+		gameScan: for (CommentBlogEntry gameTurnEntry : activeGames) {
+			
+			if (doRcAbortCheck(botAccount)) {
+				break gameScan;
+			}
+			
+			int entryId = gameTurnEntry.getEntryId();
+			
+			String gameId = gameIdMap.get(entryId);
+			File gameDir = gameDirMap.get(entryId);
+			String turnNumber = turnNoMap.get(entryId);
+			File semGameComplete = new File(gameDir, SEM_GAMECOMPLETE);
+			
 			Map<String, String> playerInfo = new HashMap<>();
 			Map<String, Permlink> playerPermlinks = new HashMap<>();
+			Comment gameTurnComment = gameTurnEntry.getComment();
 			List<Discussion> playerReplies = steemJ.getContentReplies(botAccount,
-					gameTurnEntry.getComment().getPermlink());
+					gameTurnComment.getPermlink());
 			playersScan: for (Discussion playerReply : playerReplies) {
 				String body = playerReply.getBody();
 				body = StringUtils.substringBetween(body, "<html>", "</html>");
@@ -1007,7 +1045,7 @@ public class FarHorizonsApp implements Runnable {
 				}
 			}
 
-			Date posted = gameTurnEntry.getComment().getCreated().getDateTimeAsDate();
+			Date posted = gameTurnComment.getCreated().getDateTimeAsDate();
 
 			if (!allPlayersAccountedFor && !submitOrdersDeadlinePast(posted)) {
 				GregorianCalendar cal = submitOrdersDeadline(posted);
