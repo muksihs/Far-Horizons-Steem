@@ -258,7 +258,8 @@ public class FarHorizonsApp implements Runnable {
 				continue;
 			}
 			if (arg.equals("--test-deadline")) {
-				newGameDeadline(new GregorianCalendar());
+				System.out.println("GAME JOIN DEADLINE: "+joinGameDeadline(new GregorianCalendar()).getTime().toString());
+				System.out.println("SUBMIT ORDERS DEADLINE: "+submitOrdersDeadline(new GregorianCalendar()).getTime().toString());
 				continue;
 			}
 			if (arg.equals("--report-bandwidth")) {
@@ -570,7 +571,7 @@ public class FarHorizonsApp implements Runnable {
 				registeredSpecies.put(activePlayer, activeSpecies);
 			}
 
-			GregorianCalendar deadline = newTurnDeadline(discussion.getCreated().getDateTimeAsDate());
+			GregorianCalendar submitOrdersDeadline = submitOrdersDeadline(discussion.getCreated().getDateTimeAsDate());
 			// only pay players who actually played
 			List<Discussion> replies = steemJ.getContentReplies(botAccount, discussion.getPermlink());
 			Set<String> activePlayers = new HashSet<>();
@@ -586,7 +587,7 @@ public class FarHorizonsApp implements Runnable {
 					continue playersScan;
 				}
 				Date playedWhen = reply.getCreated().getDateTimeAsDate();
-				if (playedWhen.after(deadline.getTime())) {
+				if (playedWhen.after(submitOrdersDeadline.getTime())) {
 					System.err.println("Ignoring late turn: " + name);
 					continue;
 				}
@@ -601,7 +602,7 @@ public class FarHorizonsApp implements Runnable {
 			for (VoteState vote : votes) {
 				Date voteWhen = vote.getTime().getDateTimeAsDate();
 				String name = vote.getVoter().getName();
-				if (voteWhen.after(deadline.getTime())) {
+				if (voteWhen.after(submitOrdersDeadline.getTime())) {
 					System.err.println("Ignoring late vote: " + name);
 					continue;
 				}
@@ -1008,8 +1009,8 @@ public class FarHorizonsApp implements Runnable {
 
 			Date posted = gameTurnEntry.getComment().getCreated().getDateTimeAsDate();
 
-			if (!allPlayersAccountedFor && !isNewTurnDeadlineOver(posted)) {
-				GregorianCalendar cal = newTurnDeadline(posted);
+			if (!allPlayersAccountedFor && !submitOrdersDeadlinePast(posted)) {
+				GregorianCalendar cal = submitOrdersDeadline(posted);
 				DateFormat df = DateFormat.getDateTimeInstance();
 				df.setTimeZone(EST5EDT);
 				String closesEst5Edt = df.format(cal.getTime());
@@ -1293,13 +1294,13 @@ public class FarHorizonsApp implements Runnable {
 			}
 			System.out.println("Game " + gameId + " has " + playerInfo.size() + " players.");
 			Date posted = entry.getComment().getCreated().getDateTimeAsDate();
-			if (!gameFull && !isNewGameDeadlineOver(posted)) {
-				GregorianCalendar newGameDeadline = newGameDeadline(posted);
+			if (!gameFull && !joinGameDeadlinePast(posted)) {
+				GregorianCalendar joinGameDeadline = joinGameDeadline(posted);
 				DateFormat df = DateFormat.getDateTimeInstance();
 				df.setTimeZone(EST5EDT);
-				String closesEst5Edt = df.format(newGameDeadline.getTime());
+				String closesEst5Edt = df.format(joinGameDeadline.getTime());
 				df.setTimeZone(TimeZone.getTimeZone("UTC"));
-				String closesUtc = df.format(newGameDeadline.getTime());
+				String closesUtc = df.format(joinGameDeadline.getTime());
 				System.out.println(
 						"Player join period still open. Closes " + closesEst5Edt + " EST5EDT (" + closesUtc + " UTC)");
 				continue newGameScan;
@@ -1483,16 +1484,16 @@ public class FarHorizonsApp implements Runnable {
 		}
 	}
 
-	private boolean isNewGameDeadlineOver(Date posted) {
+	private boolean submitOrdersDeadlinePast(Date posted) {
 		GregorianCalendar cal = new GregorianCalendar();
 		cal.setTime(posted);
-		return new GregorianCalendar().after(newGameDeadline(cal));
+		return new GregorianCalendar().after(submitOrdersDeadline(cal));
 	}
-
-	private boolean isNewTurnDeadlineOver(Date posted) {
+	
+	private boolean joinGameDeadlinePast(Date posted) {
 		GregorianCalendar cal = new GregorianCalendar();
 		cal.setTime(posted);
-		return new GregorianCalendar().after(newTurnDeadline(cal));
+		return new GregorianCalendar().after(joinGameDeadline(cal));
 	}
 
 	private String simpleBashQuote(String arg) {
@@ -1596,16 +1597,7 @@ public class FarHorizonsApp implements Runnable {
 		String tn = getTurnNumber(gameDir);
 		File htmlFile = new File(gameDir, "reports/_steem-post-" + tn + ".html");
 		File gamedataFile = new File(gameDir, "reports/_steem-post-" + tn + ".data");
-		GregorianCalendar cal = new GregorianCalendar(EST5EDT);
-		cal.add(GregorianCalendar.DAY_OF_YEAR, +3);
-		int minute = cal.get(GregorianCalendar.MINUTE);
-		// use int math to set to lowest matching quarter value;
-		minute /= 15;
-		minute *= 15;
-		cal.set(GregorianCalendar.MINUTE, minute);
-		cal.set(GregorianCalendar.SECOND, 0);
-		cal.set(GregorianCalendar.MILLISECOND, 0);
-
+		GregorianCalendar cal = submitOrdersDeadline(new GregorianCalendar(EST5EDT));
 		DateFormat df = DateFormat.getDateTimeInstance();
 		df.setTimeZone(EST5EDT);
 		String deadlineEst5Edt = basicEscape(df.format(cal.getTime())) + " EST5EDT";
@@ -1928,44 +1920,21 @@ public class FarHorizonsApp implements Runnable {
 		}
 	}
 
-	private GregorianCalendar newGameDeadline(Date date) {
+	private GregorianCalendar submitOrdersDeadline(Date date) {
 		GregorianCalendar cal = new GregorianCalendar();
 		cal.setTime(date);
-		return newGameDeadline(cal);
-	}
-
-	private GregorianCalendar newGameDeadline(GregorianCalendar cal) {
-		cal.setTimeZone(EST5EDT);
-		cal.add(GregorianCalendar.DAY_OF_YEAR, +2);
-		// cal.add(GregorianCalendar.HOUR_OF_DAY, 2);
-		int minute = cal.get(GregorianCalendar.MINUTE);
-		// use int math to set to lowest matching quarter hour value;
-		minute /= 15;
-		minute *= 15;
-		cal.set(GregorianCalendar.MINUTE, minute);
-		cal.set(GregorianCalendar.SECOND, 0);
-		cal.set(GregorianCalendar.MILLISECOND, 0);
-		DateFormat df = DateFormat.getDateTimeInstance();
-		df.setTimeZone(EST5EDT);
-		// String deadlineEst5Edt = basicEscape(df.format(cal.getTime())) + " EST5EDT";
-		return cal;
-	}
-
-	private GregorianCalendar newTurnDeadline(Date date) {
-		GregorianCalendar cal = new GregorianCalendar();
-		cal.setTime(date);
-		return newTurnDeadline(cal);
+		return submitOrdersDeadline(cal);
 	}
 
 	/**
-	 * 7 days from turn post for submit deadline.
+	 * 6 days from turn post for submit deadline.
 	 * 
 	 * @param cal
 	 * @return
 	 */
-	private GregorianCalendar newTurnDeadline(GregorianCalendar cal) {
+	private GregorianCalendar submitOrdersDeadline(GregorianCalendar cal) {
 		cal.setTimeZone(EST5EDT);
-		cal.add(GregorianCalendar.DAY_OF_YEAR, +3);
+		cal.add(GregorianCalendar.DAY_OF_YEAR, +6);
 		int minute = cal.get(GregorianCalendar.MINUTE);
 		// use int math to set to lowest matching quarter hour value;
 		minute /= 15;
@@ -1975,12 +1944,37 @@ public class FarHorizonsApp implements Runnable {
 		cal.set(GregorianCalendar.MILLISECOND, 0);
 		DateFormat df = DateFormat.getDateTimeInstance();
 		df.setTimeZone(EST5EDT);
-		// String deadlineEst5Edt = basicEscape(df.format(cal.getTime())) + " EST5EDT";
 		return cal;
+	}
+	
+	/**
+	 * 3 days from invite post for submit deadline.
+	 * 
+	 * @param cal
+	 * @return
+	 */
+	private GregorianCalendar joinGameDeadline(GregorianCalendar cal) {
+		cal.setTimeZone(EST5EDT);
+		cal.add(GregorianCalendar.DAY_OF_YEAR, +2);
+		int minute = cal.get(GregorianCalendar.MINUTE);
+		// use int math to set to lowest matching quarter hour value;
+		minute /= 15;
+		minute *= 15;
+		cal.set(GregorianCalendar.MINUTE, minute);
+		cal.set(GregorianCalendar.SECOND, 0);
+		cal.set(GregorianCalendar.MILLISECOND, 0);
+		DateFormat df = DateFormat.getDateTimeInstance();
+		df.setTimeZone(EST5EDT);
+		return cal;
+	}
+	private GregorianCalendar joinGameDeadline(Date date) {
+		GregorianCalendar cal = new GregorianCalendar();
+		cal.setTime(date);
+		return joinGameDeadline(cal);
 	}
 
 	private NewGameInviteInfo generateNewGameInviteHtml() throws IOException {
-		GregorianCalendar cal = newGameDeadline(new GregorianCalendar());
+		GregorianCalendar cal = joinGameDeadline(new GregorianCalendar());
 
 		DateFormat df = DateFormat.getDateTimeInstance();
 		df.setTimeZone(EST5EDT);
