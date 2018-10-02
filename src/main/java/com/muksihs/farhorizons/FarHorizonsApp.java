@@ -870,6 +870,8 @@ public class FarHorizonsApp implements Runnable {
 		Map<Integer, File> gameDirMap = new HashMap<>();
 		Map<Integer, Set<String>> tagsMap = new HashMap<>();
 		Map<Integer, String> turnNoMap = new HashMap<>();
+		//Ensure sort is newest to oldest so that "already" tracking works correctly.
+		Collections.sort(entries, (a,b)->b.getEntryId()-a.getEntryId());
 		gameScan: for (CommentBlogEntry gameTurnEntry : entries) {
 			// if not by game master, SKIP
 			if (gameTurnEntry.getComment() == null) {
@@ -966,7 +968,7 @@ public class FarHorizonsApp implements Runnable {
 		/*
 		 * sort from oldest to newest to make sure oldest games are processed in case of RC drop
 		 */
-		Collections.sort(activeGames, (a,b)->a.getComment().getCreated().getDateTimeAsDate().compareTo(b.getComment().getCreated().getDateTimeAsDate()));
+		Collections.sort(activeGames, (a,b)->a.getEntryId()-b.getEntryId());
 		/*
 		 * process the game until RCs run out
 		 */
