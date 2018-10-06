@@ -133,12 +133,13 @@ public class FarHorizonsApp implements Runnable {
 		if (rcAccounts.isEmpty()) {
 			return true;
 		}
-		for (RcAccount rc: rcAccounts) {
+		for (RcAccount rc : rcAccounts) {
 			BigDecimal minRcsToRun = minRcsToRun(botAccount);
-			if (rc.getEstimatedMana().compareTo(minRcsToRun)>0) {
+			if (rc.getEstimatedMana().compareTo(minRcsToRun) > 0) {
 				return false;
 			}
-			System.out.println("--- Available RCs "+NumberFormat.getInstance().format(rc.getEstimatedMana())+" < "+NumberFormat.getInstance().format(minRcsToRun));
+			System.out.println("--- Available RCs " + NumberFormat.getInstance().format(rc.getEstimatedMana()) + " < "
+					+ NumberFormat.getInstance().format(minRcsToRun));
 		}
 		return true;
 	}
@@ -216,23 +217,27 @@ public class FarHorizonsApp implements Runnable {
 		steemJ = new FarHorizonsSteemJ();
 	}
 
+	//TODO: Remove all calls to this method.
+	@Deprecated
 	private void waitIfLowBandwidth() {
-		NumberFormat nf = NumberFormat.getInstance();
-		nf.setMaximumFractionDigits(2);
-		nf.setRoundingMode(RoundingMode.DOWN);
-		String prev = "";
-		while (isLowBandwidth()) {
-			try {
-				String available = nf.format((100d - 100d * getBandwidthUsedPercent()));
-				if (!prev.equals(available)) {
-					prev = available;
-					System.err.println("Low bandwidth. Waiting. " + available + "%");
-				}
-				Thread.sleep(1000l * 30l);
-			} catch (SteemCommunicationException | SteemResponseException | InterruptedException e) {
-				System.err.println(e.getMessage());
-			}
-		}
+		if (true)
+			return; // HF20 no longer uses bandwidth controls
+//		NumberFormat nf = NumberFormat.getInstance();
+//		nf.setMaximumFractionDigits(2);
+//		nf.setRoundingMode(RoundingMode.DOWN);
+//		String prev = "";
+//		while (isLowBandwidth()) {
+//			try {
+//				String available = nf.format((100d - 100d * getBandwidthUsedPercent()));
+//				if (!prev.equals(available)) {
+//					prev = available;
+//					System.err.println("Low bandwidth. Waiting. " + available + "%");
+//				}
+//				Thread.sleep(1000l * 30l);
+//			} catch (SteemCommunicationException | SteemResponseException | InterruptedException e) {
+//				System.err.println(e.getMessage());
+//			}
+//		}
 	}
 
 	private void processOptions() throws SteemCommunicationException, SteemResponseException, JsonParseException,
@@ -259,8 +264,10 @@ public class FarHorizonsApp implements Runnable {
 				continue;
 			}
 			if (arg.equals("--test-deadline")) {
-				System.out.println("GAME JOIN DEADLINE: "+joinGameDeadline(new GregorianCalendar()).getTime().toString());
-				System.out.println("SUBMIT ORDERS DEADLINE: "+submitOrdersDeadline(new GregorianCalendar()).getTime().toString());
+				System.out.println(
+						"GAME JOIN DEADLINE: " + joinGameDeadline(new GregorianCalendar()).getTime().toString());
+				System.out.println("SUBMIT ORDERS DEADLINE: "
+						+ submitOrdersDeadline(new GregorianCalendar()).getTime().toString());
 				continue;
 			}
 			if (arg.equals("--report-bandwidth")) {
@@ -358,7 +365,7 @@ public class FarHorizonsApp implements Runnable {
 				continue;
 			}
 			ExtendedAccount extendedBotAccount = getExtendedAccount(botAccount);
-			if (extendedBotAccount==null) {
+			if (extendedBotAccount == null) {
 				continue forBlogEntries;
 			}
 			// stop up voting if our voting power drops too low
@@ -423,8 +430,9 @@ public class FarHorizonsApp implements Runnable {
 			}
 		}
 	}
-	
-	private ExtendedAccount getExtendedAccount(AccountName accountName) throws SteemCommunicationException, SteemResponseException {
+
+	private ExtendedAccount getExtendedAccount(AccountName accountName)
+			throws SteemCommunicationException, SteemResponseException {
 		List<ExtendedAccount> accounts = steemJ.getAccounts(Arrays.asList(accountName));
 		for (ExtendedAccount account : accounts) {
 			if (account.getName().equals(botAccount)) {
@@ -434,9 +442,9 @@ public class FarHorizonsApp implements Runnable {
 		return null;
 	}
 
-	
 	/**
 	 * Get Estimated voting power as a percentage x 100.
+	 * 
 	 * @param lastVoteTimeSecs
 	 * @param lastVotingPower
 	 * @return
@@ -444,15 +452,17 @@ public class FarHorizonsApp implements Runnable {
 	public static BigDecimal getEstimateVote(ExtendedAccount account) {
 		return getEstimateVote(account.getLastVoteTime().getDateTimeAsInt(), account.getVotingPower());
 	}
+
 	/**
 	 * Get Estimated voting power as a percentage x 100.
+	 * 
 	 * @param lastVoteTimeSecs
 	 * @param lastVotingPower
 	 * @return
 	 */
 	public static BigDecimal getEstimateVote(int lastVoteTimeSecs, int lastVotingPower) {
 		BigDecimal maxVotingPower = BigDecimal.valueOf(10000);
-		BigDecimal now = new BigDecimal(System.currentTimeMillis()/1000l);
+		BigDecimal now = new BigDecimal(System.currentTimeMillis() / 1000l);
 		BigDecimal lastVoteTime = new BigDecimal(lastVoteTimeSecs);
 		BigDecimal elapsedTime = now.subtract(lastVoteTime);
 		BigDecimal percent = elapsedTime.divide(FIVE_DAYS_SECONDS, 3, RoundingMode.DOWN);
@@ -460,8 +470,9 @@ public class FarHorizonsApp implements Runnable {
 		BigDecimal estimatedVotingPower = new BigDecimal(lastVotingPower).add(votingPowerGained);
 		return estimatedVotingPower.min(maxVotingPower).movePointLeft(2);
 	}
+
 	public static final BigDecimal FIVE_DAYS_SECONDS = new BigDecimal((long) 5 * 24 * 60 * 60);
-	
+
 	private void doGamePayouts()
 			throws SteemCommunicationException, SteemResponseException, SteemInvalidTransactionException,
 			JsonParseException, JsonMappingException, IOException, InterruptedException {
@@ -496,17 +507,17 @@ public class FarHorizonsApp implements Runnable {
 				continue history;
 			}
 			AuthorRewardOperation aro = (AuthorRewardOperation) op.getOp();
-			Discussion discussion = steemJ.getContent(botAccount, aro.getPermlink());
+			Discussion gameTurnPost = steemJ.getContent(botAccount, aro.getPermlink());
 			String turn = "";
-			if (discussion.getTitle().matches(".*Turn \\d+.*")) {
-				turn = discussion.getTitle().replaceAll(".*Turn (\\d+).*", "$1");
+			if (gameTurnPost.getTitle().matches(".*Turn \\d+.*")) {
+				turn = gameTurnPost.getTitle().replaceAll(".*Turn (\\d+).*", "$1");
 			}
 			// if not by game master, SKIP
-			if (!discussion.getAuthor().equals(botAccount)) {
+			if (!gameTurnPost.getAuthor().equals(botAccount)) {
 				continue;
 			}
 
-			CommentMetadata metadata = json.readValue(discussion.getJsonMetadata(), CommentMetadata.class);
+			CommentMetadata metadata = json.readValue(gameTurnPost.getJsonMetadata(), CommentMetadata.class);
 			Set<String> tags = new HashSet<>(Arrays.asList(metadata.getTags()));
 			if (!tags.contains("far-horizons")) {
 				continue history;
@@ -529,10 +540,10 @@ public class FarHorizonsApp implements Runnable {
 				continue history;
 			}
 
-			File semaphore = new File(gameDir, "steem-data/payouts/_steem-payout-" + discussion.getId() + ".paid");
+			File semaphore = new File(gameDir, "steem-data/payouts/_steem-payout-" + gameTurnPost.getId() + ".paid");
 			semaphore.getParentFile().mkdirs();
 			if (semaphore.exists()) {
-				System.out.println("ALREADY PAID: " + aro.getPermlink().getLink() + " [" + discussion.getId() + "]");
+				System.out.println("ALREADY PAID: " + aro.getPermlink().getLink() + " [" + gameTurnPost.getId() + "]");
 				continue history;
 			}
 			if (!turn.isEmpty()) {
@@ -571,39 +582,44 @@ public class FarHorizonsApp implements Runnable {
 				registeredPlayers.add(activePlayer);
 				registeredSpecies.put(activePlayer, activeSpecies);
 			}
+			System.out.println("Registered players: " + registeredPlayers.toString());
 
-			GregorianCalendar submitOrdersDeadline = submitOrdersDeadline(discussion.getCreated().getDateTimeAsDate());
+			GregorianCalendar payoutDeadline = postPayoutDeadline(gameTurnPost.getCreated().getDateTimeAsDate());
 			// only pay players who actually played
-			List<Discussion> replies = steemJ.getContentReplies(botAccount, discussion.getPermlink());
+			List<Discussion> replies = steemJ.getContentReplies(botAccount, gameTurnPost.getPermlink());
 			Set<String> activePlayers = new HashSet<>();
-			playersScan: for (Discussion reply : replies) {
-				String name = reply.getAuthor().getName();
-				String body = reply.getBody();
+			playersScan: for (Discussion playerReply : replies) {
+				String name = playerReply.getAuthor().getName();
+				String body = playerReply.getBody();
 				body = StringUtils.substringBetween(body, "<html>", "</html>");
 				if (body == null || body.trim().isEmpty()) {
 					continue playersScan;
 				}
-				body = LZSEncoding.decompressFromUTF16(basicUnescape(body));
-				if (body == null || !body.contains("START COMBAT")) {
+				body = decompress(body);
+				String bodyUc = body.toUpperCase();
+				if (body == null || (!bodyUc.contains("START COMBAT")
+						&& !bodyUc.replaceAll("\\s", "").contains("SPECIESNAME:"))) {
+					System.out.println(" - Ignoring non-orders comment by " + playerReply.getAuthor().getName());
 					continue playersScan;
 				}
-				Date playedWhen = reply.getCreated().getDateTimeAsDate();
-				if (playedWhen.after(submitOrdersDeadline.getTime())) {
+				Date playedWhen = playerReply.getCreated().getDateTimeAsDate();
+				if (playedWhen.after(payoutDeadline.getTime())) {
 					System.err.println("Ignoring late turn: " + name);
 					continue;
 				}
 				activePlayers.add(name);
 			}
 			activePlayers.retainAll(registeredPlayers);
+			System.out.println("Active players: " + playerList.toString());
 			registeredPlayers = null; // make sure we don't use wrong set with a NPE!
 
 			Set<String> votingPlayers = new HashSet<>();
-			List<VoteState> votes = discussion.getActiveVotes();
+			List<VoteState> votes = gameTurnPost.getActiveVotes();
 			Map<String, BigDecimal> votingShares = new HashMap<>();
 			for (VoteState vote : votes) {
 				Date voteWhen = vote.getTime().getDateTimeAsDate();
 				String name = vote.getVoter().getName();
-				if (voteWhen.after(submitOrdersDeadline.getTime())) {
+				if (voteWhen.after(payoutDeadline.getTime())) {
 					System.err.println("Ignoring late vote: " + name);
 					continue;
 				}
@@ -670,9 +686,9 @@ public class FarHorizonsApp implements Runnable {
 					symbol = AssetSymbolType.STEEM;
 				}
 				Asset amount = new Asset(payout.movePointRight(payout.scale()).longValue(), symbol);
-				String memo = "Far Horizons Payout: " + discussion.getPermlink().getLink();
+				String memo = "Far Horizons Payout: " + gameTurnPost.getPermlink().getLink();
 				if (alreadyPaid.contains(player + "|" + memo)
-						|| alreadyPaid.contains(player + "|" + discussion.getPermlink().getLink())) {
+						|| alreadyPaid.contains(player + "|" + gameTurnPost.getPermlink().getLink())) {
 					System.out.println(" - Already Paid: " + player);
 					continue;
 				}
@@ -870,8 +886,8 @@ public class FarHorizonsApp implements Runnable {
 		Map<Integer, File> gameDirMap = new HashMap<>();
 		Map<Integer, Set<String>> tagsMap = new HashMap<>();
 		Map<Integer, String> turnNoMap = new HashMap<>();
-		//Ensure sort is newest to oldest so that "already" tracking works correctly.
-		Collections.sort(entries, (a,b)->b.getEntryId()-a.getEntryId());
+		// Ensure sort is newest to oldest so that "already" tracking works correctly.
+		Collections.sort(entries, (a, b) -> b.getEntryId() - a.getEntryId());
 		gameScan: for (CommentBlogEntry gameTurnEntry : entries) {
 			// if not by game master, SKIP
 			if (gameTurnEntry.getComment() == null) {
@@ -966,38 +982,39 @@ public class FarHorizonsApp implements Runnable {
 			turnNoMap.put(entryId, turnNumber);
 		}
 		/*
-		 * sort from oldest to newest to make sure oldest games are processed in case of RC drop
+		 * sort from oldest to newest to make sure oldest games are processed in case of
+		 * RC drop
 		 */
-		Collections.sort(activeGames, (a,b)->a.getEntryId()-b.getEntryId());
+		Collections.sort(activeGames, (a, b) -> a.getEntryId() - b.getEntryId());
 		/*
 		 * process the game until RCs run out
 		 */
 		gameScan: for (CommentBlogEntry gameTurnEntry : activeGames) {
-			
+
 			if (doRcAbortCheck(botAccount)) {
 				break gameScan;
 			}
-			
+
 			int entryId = gameTurnEntry.getEntryId();
-			
+
 			String gameId = gameIdMap.get(entryId);
 			File gameDir = gameDirMap.get(entryId);
 			String turnNumber = turnNoMap.get(entryId);
 			File semGameComplete = new File(gameDir, SEM_GAMECOMPLETE);
-			
+
 			Map<String, String> playerInfo = new HashMap<>();
 			Map<String, Permlink> playerPermlinks = new HashMap<>();
 			Comment gameTurnComment = gameTurnEntry.getComment();
-			List<Discussion> playerReplies = steemJ.getContentReplies(botAccount,
-					gameTurnComment.getPermlink());
+			List<Discussion> playerReplies = steemJ.getContentReplies(botAccount, gameTurnComment.getPermlink());
 			playersScan: for (Discussion playerReply : playerReplies) {
 				String body = playerReply.getBody();
 				body = StringUtils.substringBetween(body, "<html>", "</html>");
 				if (body == null || body.trim().isEmpty()) {
 					continue playersScan;
 				}
-				body = LZSEncoding.decompressFromUTF16(basicUnescape(body));
+				body = decompress(body);
 				if (body == null || !body.contains("START COMBAT")) {
+					System.out.println(" - Ignoring non-orders comment by " + playerReply.getAuthor().getName());
 					continue playersScan;
 				}
 				// parse for required fields
@@ -1109,19 +1126,19 @@ public class FarHorizonsApp implements Runnable {
 			if (isGameOver) {
 				@SuppressWarnings("unused")
 				String gameCompletePermlink = postGameComplete(gameDir);
-//				for (String player : playerPermlinks.keySet()) {
-//					Permlink playerPermlink = playerPermlinks.get(player);
-//					markGameComplete(player, playerPermlink, gameCompletePermlink, tags);
-//				}
+				// for (String player : playerPermlinks.keySet()) {
+				// Permlink playerPermlink = playerPermlinks.get(player);
+				// markGameComplete(player, playerPermlink, gameCompletePermlink, tags);
+				// }
 				FileUtils.touch(semGameComplete);
 			} else {
 				@SuppressWarnings("unused")
 				String newTurnPermlink = postTurnResults(gameDir);
-//				postGameMaps(gameDir, new Permlink(newTurnPermlink), tags);
-//				for (String player : playerPermlinks.keySet()) {
-//					Permlink playerPermlink = playerPermlinks.get(player);
-//					markTurnComplete(player, playerPermlink, newTurnPermlink, tags);
-//				}
+				// postGameMaps(gameDir, new Permlink(newTurnPermlink), tags);
+				// for (String player : playerPermlinks.keySet()) {
+				// Permlink playerPermlink = playerPermlinks.get(player);
+				// markTurnComplete(player, playerPermlink, newTurnPermlink, tags);
+				// }
 			}
 		}
 	}
@@ -1308,9 +1325,9 @@ public class FarHorizonsApp implements Runnable {
 				String body = discussion.getBody();
 				if (body.startsWith("<html>")) {
 					body = StringUtils.substringBetween(body, "<html>", "</html>");
-					String tmp = LZSEncoding.decompressFromUTF16(basicUnescape(body));
-					if (tmp != null) {
-						body = tmp;
+					body = decompress(body);
+					if (body == null) {
+						continue;
 					}
 				}
 				// parse for required fields
@@ -1515,12 +1532,13 @@ public class FarHorizonsApp implements Runnable {
 			@SuppressWarnings("unused")
 			String newTurnPermlink = postTurnResults(gameDir);
 			// post back to previous post a reply with new post link
-//			markGameStarted(accountName, entry.getComment().getPermlink(), newTurnPermlink, tags);
+			// markGameStarted(accountName, entry.getComment().getPermlink(),
+			// newTurnPermlink, tags);
 
-//			for (String player : playerPermlinks.keySet()) {
-//				Permlink playerPermlink = playerPermlinks.get(player);
-//				markTurnComplete(player, playerPermlink, newTurnPermlink, tags);
-//			}
+			// for (String player : playerPermlinks.keySet()) {
+			// Permlink playerPermlink = playerPermlinks.get(player);
+			// markTurnComplete(player, playerPermlink, newTurnPermlink, tags);
+			// }
 		}
 	}
 
@@ -1529,7 +1547,7 @@ public class FarHorizonsApp implements Runnable {
 		cal.setTime(posted);
 		return new GregorianCalendar().after(submitOrdersDeadline(cal));
 	}
-	
+
 	private boolean joinGameDeadlinePast(Date posted) {
 		GregorianCalendar cal = new GregorianCalendar();
 		cal.setTime(posted);
@@ -1725,7 +1743,7 @@ public class FarHorizonsApp implements Runnable {
 			String playerName = player.split("\t")[1].trim();
 			File reportFile = new File(gameDir, "reports/sp" + speciesNo + ".rpt.t" + tn);
 			if (!reportFile.canRead()) {
-				System.err.println("CAN'T READ "+reportFile.getAbsolutePath());
+				System.err.println("CAN'T READ " + reportFile.getAbsolutePath());
 			}
 			String playerReport = FileUtils.readFileToString(reportFile, StandardCharsets.UTF_8);
 			transmission.append("<p>");
@@ -1790,10 +1808,10 @@ public class FarHorizonsApp implements Runnable {
 		// turnMessage.append(getMapImagesHtml(gameDir));
 		// turnResults.append("<h4>BEGIN SECRET GALACTIC DATABASE TRANSMISSION:</h4>");
 		// String secretMessage =
-		// basicEscape(LZSEncoding.compressToUTF16(transmission.toString()));
+		// compress(transmission.toString());
 		// secretMessage = "<hr/><div id='secret-message'>" + secretMessage +
 		// "</div><hr/>";
-		String secretMessage = LZSEncoding.compressToBase64(transmission.toString());
+		String secretMessage = compress(transmission.toString());
 		System.out.println(
 				"PLAYER REPORTS: " + transmission.toString().getBytes(StandardCharsets.UTF_8).length + " UTF-8 bytes, "
 						+ secretMessage.getBytes(StandardCharsets.UTF_8).length + " UTF-8 compressed bytes.");
@@ -1966,6 +1984,25 @@ public class FarHorizonsApp implements Runnable {
 		return submitOrdersDeadline(cal);
 	}
 
+	private GregorianCalendar postPayoutDeadline(Date date) {
+		GregorianCalendar cal = new GregorianCalendar();
+		cal.setTime(date);
+		return postPayoutDeadline(cal);
+	}
+
+	/**
+	 * 7 days from turn post for vote deadline. No rounding.
+	 * 
+	 * @param cal
+	 * @return
+	 */
+	private GregorianCalendar postPayoutDeadline(GregorianCalendar cal) {
+		GregorianCalendar deadline = new GregorianCalendar(EST5EDT);
+		deadline.setTime(cal.getTime());
+		deadline.add(GregorianCalendar.DAY_OF_YEAR, +7);
+		return deadline;
+	}
+
 	/**
 	 * 6 days from turn post for submit deadline.
 	 * 
@@ -1973,20 +2010,20 @@ public class FarHorizonsApp implements Runnable {
 	 * @return
 	 */
 	private GregorianCalendar submitOrdersDeadline(GregorianCalendar cal) {
-		cal.setTimeZone(EST5EDT);
-		cal.add(GregorianCalendar.DAY_OF_YEAR, +6);
-		int minute = cal.get(GregorianCalendar.MINUTE);
+		GregorianCalendar deadline = new GregorianCalendar(EST5EDT);
+		deadline.setTime(cal.getTime());
+		deadline.setTime(cal.getTime());
+		deadline.add(GregorianCalendar.DAY_OF_YEAR, +6);
+		int minute = deadline.get(GregorianCalendar.MINUTE);
 		// use int math to set to lowest matching quarter hour value;
 		minute /= 15;
 		minute *= 15;
-		cal.set(GregorianCalendar.MINUTE, minute);
-		cal.set(GregorianCalendar.SECOND, 0);
-		cal.set(GregorianCalendar.MILLISECOND, 0);
-		DateFormat df = DateFormat.getDateTimeInstance();
-		df.setTimeZone(EST5EDT);
-		return cal;
+		deadline.set(GregorianCalendar.MINUTE, minute);
+		deadline.set(GregorianCalendar.SECOND, 0);
+		deadline.set(GregorianCalendar.MILLISECOND, 0);
+		return deadline;
 	}
-	
+
 	/**
 	 * 3 days from invite post for submit deadline.
 	 * 
@@ -1994,19 +2031,20 @@ public class FarHorizonsApp implements Runnable {
 	 * @return
 	 */
 	private GregorianCalendar joinGameDeadline(GregorianCalendar cal) {
-		cal.setTimeZone(EST5EDT);
-		cal.add(GregorianCalendar.DAY_OF_YEAR, +2);
-		int minute = cal.get(GregorianCalendar.MINUTE);
+		GregorianCalendar deadline = new GregorianCalendar(EST5EDT);
+		deadline.setTime(cal.getTime());
+		deadline.setTime(cal.getTime());
+		deadline.add(GregorianCalendar.DAY_OF_YEAR, +2);
+		int minute = deadline.get(GregorianCalendar.MINUTE);
 		// use int math to set to lowest matching quarter hour value;
 		minute /= 15;
 		minute *= 15;
-		cal.set(GregorianCalendar.MINUTE, minute);
-		cal.set(GregorianCalendar.SECOND, 0);
-		cal.set(GregorianCalendar.MILLISECOND, 0);
-		DateFormat df = DateFormat.getDateTimeInstance();
-		df.setTimeZone(EST5EDT);
-		return cal;
+		deadline.set(GregorianCalendar.MINUTE, minute);
+		deadline.set(GregorianCalendar.SECOND, 0);
+		deadline.set(GregorianCalendar.MILLISECOND, 0);
+		return deadline;
 	}
+
 	private GregorianCalendar joinGameDeadline(Date date) {
 		GregorianCalendar cal = new GregorianCalendar();
 		cal.setTime(date);
@@ -2506,6 +2544,8 @@ public class FarHorizonsApp implements Runnable {
 
 	private double bandwidthRequiredPercent = 65d;
 
+	//TODO: Remove all calls to this method.
+	@Deprecated
 	private boolean isLowBandwidth() {
 		try {
 			double bandwidthUsed = (double) Math.ceil(10000d * getBandwidthUsedPercent()) / 100d;
@@ -2580,11 +2620,38 @@ public class FarHorizonsApp implements Runnable {
 		} catch (IOException e) {
 			return _MIN_RCS_TO_RUN;
 		}
-		for (RcAccount rc: rcs.getRcAccounts()) {
+		for (RcAccount rc : rcs.getRcAccounts()) {
 			if (rc.getAccount().equals(botAccount.getName())) {
 				return rc.getMaxRc().divide(new BigDecimal("2")).setScale(0, RoundingMode.DOWN);
 			}
 		}
 		return _MIN_RCS_TO_RUN;
+	}
+
+	private static String decompress(String compressed) {
+		if (compressed == null) {
+			return null;
+		}
+		compressed = basicUnescape(compressed);
+		String tmp = null;
+		try {
+			tmp = LZSEncoding.decompressFromBase64(compressed);
+		} catch (Exception e) {
+		}
+		if (tmp == null || tmp.trim().isEmpty()) {
+			try {
+				tmp = LZSEncoding.decompressFromUTF16(compressed);
+			} catch (Exception e) {
+				return null;
+			}
+		}
+		return tmp;
+	}
+
+	private static String compress(String uncompressed) {
+		if (uncompressed == null) {
+			return null;
+		}
+		return basicEscape(LZSEncoding.compressToBase64(basicUnescape(uncompressed)));
 	}
 }
