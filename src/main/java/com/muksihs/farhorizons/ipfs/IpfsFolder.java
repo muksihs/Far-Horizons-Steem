@@ -26,7 +26,7 @@ public class IpfsFolder implements Closeable {
 		}
 	}
 
-	private boolean debug=false;
+	private boolean debug = false;
 	private IPFSDaemon ipfsd;
 	private Process dp;
 	private final Set<File> entries;
@@ -48,37 +48,40 @@ public class IpfsFolder implements Closeable {
 	}
 
 	public void commit() throws IOException {
-		List<NamedStreamable> children=new ArrayList<>();
-		for (File entry: entries) {
+		List<NamedStreamable> children = new ArrayList<>();
+		for (File entry : entries) {
 			FileWrapper child = new NamedStreamable.FileWrapper(entry);
 			children.add(child);
 		}
 		NamedStreamable.DirWrapper folder = new NamedStreamable.DirWrapper(parentFolder, children);
 		IPFS ipfs = new IPFS("/ip4/127.0.0.1/tcp/5001");
 		List<MerkleNode> addResults = ipfs.add(folder, true);
-		Collections.sort(addResults, (a,b)->a.name.get().length()-b.name.get().length());
-		MerkleNode dirResult=null;
+		Collections.sort(addResults, (a, b) -> a.name.get().length() - b.name.get().length());
+		MerkleNode dirResult = null;
 		for (MerkleNode addResult : addResults) {
 			if (isDebug()) {
-				System.out.println("Added: "+addResult.name.get());
+				System.out.println("Added: " + addResult.name.get());
 			}
 			if (addResult.name.orElse("*").equals("")) {
 				dirResult = addResult;
 			}
 		}
-		if (dirResult==null) {
+		if (dirResult == null) {
 			return;
 		}
 		for (MerkleNode addResult : addResults) {
 			head(addResult);
 			if (isDebug()) {
-				System.out.println("https://cloudflare-ipfs.com/ipfs/"+dirResult.hash.toBase58()+addResult.name.get().replace(" ", "%20"));
-				System.out.println("https://ipfs.io/ipfs/"+dirResult.hash.toBase58()+addResult.name.get().replace(" ", "%20"));
+				System.out.println("https://cloudflare-ipfs.com/ipfs/" + dirResult.hash.toBase58()
+						+ addResult.name.get().replace(" ", "%20"));
+				System.out.println(
+						"https://ipfs.io/ipfs/" + dirResult.hash.toBase58() + addResult.name.get().replace(" ", "%20"));
 			}
 		}
 	}
-	
+
 	private final String parentFolder;
+
 	public IpfsFolder(String parentFolder) {
 		if (parentFolder == null) {
 			throw new NullPointerException("Parent folder must not be null.");
@@ -89,12 +92,12 @@ public class IpfsFolder implements Closeable {
 		if (!parentFolder.endsWith("/")) {
 			parentFolder += "/";
 		}
-		this.parentFolder=parentFolder;
+		this.parentFolder = parentFolder;
 		entries = new TreeSet<>();
 		ipfsd = new IPFSDaemon();
 		ipfsd.download();
 		ipfsd.getBin().setExecutable(true);
-		
+
 		Process isDaemonAlready = ipfsd.process("id");
 		while (isDaemonAlready.isAlive()) {
 			sleep(250);
@@ -103,7 +106,7 @@ public class IpfsFolder implements Closeable {
 			dp = null;
 			return;
 		}
-		
+
 		dp = ipfsd.process("daemon", "--init", "--unrestricted-api");
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> dp.destroy()));
 		do {
@@ -126,10 +129,14 @@ public class IpfsFolder implements Closeable {
 		int result = 0;
 		if (r.nextBoolean()) {
 			result = headCloudflare(addResult);
-			result = headIpfsIo(addResult);
+			if (result != 200) {
+				result = headIpfsIo(addResult);
+			}
 		} else {
 			result = headIpfsIo(addResult);
-			result = headCloudflare(addResult);
+			if (result != 200) {
+				result = headCloudflare(addResult);
+			}
 		}
 		if (result == 524) { // timeout on response from server
 			if (isDebug()) {
@@ -147,7 +154,7 @@ public class IpfsFolder implements Closeable {
 		con.connect();
 		con.disconnect();
 		if (isDebug()) {
-			System.out.println("=> "+url.toExternalForm());
+			System.out.println("=> " + url.toExternalForm());
 		}
 		return con.getResponseCode();
 	}
@@ -159,14 +166,14 @@ public class IpfsFolder implements Closeable {
 		con.connect();
 		con.disconnect();
 		if (isDebug()) {
-			System.out.println("=> "+url.toExternalForm());
+			System.out.println("=> " + url.toExternalForm());
 		}
 		return con.getResponseCode();
 	}
 
 	@Override
 	public void close() throws IOException {
-		if (dp==null) {
+		if (dp == null) {
 			return;
 		}
 		dp.destroy();
