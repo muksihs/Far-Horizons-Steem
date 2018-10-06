@@ -21,3 +21,5 @@ gradle-app.setting
 /bin/
 /reports/
 /.ipfs/
+/go-ipfs.tar.gz
+/ipfs
