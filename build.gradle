@@ -23,6 +23,7 @@ task fatjar(type: FatCapsule) {
 repositories {
     jcenter()
     maven { url "https://jitpack.io" }
+    maven { url 'https://mymavenrepo.com/repo/NIp3fBk55f5oF6VI1Wso/' }
 }
 
 configurations {
@@ -42,6 +43,11 @@ dependencies {
 	compile group: 'org.slf4j', name: 'slf4j-jdk14', version: '1.7.25'
 	// https://mvnrepository.com/artifact/org.apache.commons/commons-math3
 	//compile group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'	
+	compile 'fr.rhaz.ipfs:ipfs-daemon:1.0.7'
+	compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:+"
+	compile 'com.github.ipfs:java-ipfs-api:v1.2.2'
+	
+	testCompile 'org.testng:testng:6.+'
 	
 }
  
@@ -87,4 +93,10 @@ eclipse {
 			facet name: 'jst.java', version: '1.8'
 		}
 	}
+}
+
+test {
+  useTestNG()
+  systemProperty 'debug', 'debug'
+  testLogging.showStandardStreams = true
 }
