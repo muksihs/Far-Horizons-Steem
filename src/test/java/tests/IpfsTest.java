@@ -93,6 +93,7 @@ public class IpfsTest {
 			ipfs.setDebug(true);
 			ipfs.add(new File("test-data", "hudson-101x125.jpg"));
 			ipfs.add(new File("test-data/subfolder", "dog park dissidents.jpg"));
+			ipfs.add(new File("test-data", "LeaDog_Pride_Flag.jpg"));
 			ipfs.commit();
 		}
 	}
