@@ -97,6 +97,21 @@ public class IpfsTest {
 			ipfs.commit();
 		}
 	}
+	
+	@Test
+	public void ipfsFolderUtilAdd2() throws IOException {
+		System.out.println("=== ipfsFolderUtilAdd2");
+		try (IpfsFolder ipfs = new IpfsFolder("game-1536431132")) {
+			ipfs.setDebug(true);
+			ipfs.add(new File("test-data/final-game-reports", "sp01.rpt.t46.txt"));
+			ipfs.add(new File("test-data/final-game-reports", "sp02.rpt.t46.txt"));
+			String ipfsHash = ipfs.commit();
+			System.out.println("https://cloudflare-ipfs.com/ipfs/"+ipfsHash+"/game-1536431132/sp01.rpt.t46.txt");
+			System.out.println("https://cloudflare-ipfs.com/ipfs/"+ipfsHash+"/game-1536431132/sp02.rpt.t46.txt");
+			System.out.println("https://ipfs.io/ipfs/"+ipfsHash+"/game-1536431132/sp01.rpt.t46.txt");
+			System.out.println("https://ipfs.io/ipfs/"+ipfsHash+"/game-1536431132/sp02.rpt.t46.txt");
+		}
+	}
 
 	@Test(dependsOnMethods= {"ipfsFolderUtilAdd"})
 	public void ipfsAdd() throws IOException {

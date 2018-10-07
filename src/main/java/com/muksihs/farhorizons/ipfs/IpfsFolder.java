@@ -47,7 +47,7 @@ public class IpfsFolder implements Closeable {
 		entries.clear();
 	}
 
-	public void commit() throws IOException {
+	public String commit() throws IOException {
 		List<NamedStreamable> children = new ArrayList<>();
 		for (File entry : entries) {
 			FileWrapper child = new NamedStreamable.FileWrapper(entry);
@@ -67,7 +67,7 @@ public class IpfsFolder implements Closeable {
 			}
 		}
 		if (dirResult == null) {
-			return;
+			return null;
 		}
 		for (MerkleNode addResult : addResults) {
 			head(addResult);
@@ -78,6 +78,7 @@ public class IpfsFolder implements Closeable {
 						"https://ipfs.io/ipfs/" + dirResult.hash.toBase58() + addResult.name.get().replace(" ", "%20"));
 			}
 		}
+		return dirResult.hash.toBase58();
 	}
 
 	private final String parentFolder;

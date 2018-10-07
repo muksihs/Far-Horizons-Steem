@@ -1,0 +1,742 @@
+
+
+			EVENT LOG FOR TURN 45
+
+Combat orders:
+
+Pre-departure orders:
+    Installation of 36 Colonial Mining Units began on PL Bookshelf 2-12.
+    Installation of 31 Colonial Manufacturing Units began on PL Bookshelf
+      2-12.
+    Installation of 49 Colonial Mining Units began on PL Zombie Dog 2-6.
+    Installation of 54 Colonial Manufacturing Units began on PL Zombie Dog
+      2-6.
+    Installation of 24 Colonial Mining Units began on PL Cat 1-18.
+    Installation of 25 Colonial Manufacturing Units began on PL Cat 1-18.
+    Installation of 15 Colonial Mining Units began on PL Bookend 3-24.
+    Installation of 8 Colonial Manufacturing Units began on PL Bookend 3-24.
+    Installation of 47 Colonial Mining Units began on PL Desktop 3-9.
+    Installation of 50 Colonial Manufacturing Units began on PL Desktop 3-9.
+
+Jump orders:
+    TR10 42 a will try to jump to PL Zombie Kitties 2-27 (7.70%).
+
+Production orders:
+
+  Number of economic units at start of production: 22635
+
+  Start of production on PL Desktop 3-9. (Initial balance is 1080.)
+! WARNING: build 9 tp
+! Insufficient funds. Substituting 2 for 9.
+    2 Terraforming Plants were produced at a cost of 1850.
+    129 Colonist Units, 63 Colonial Mining Units, and 66 Colonial
+      Manufacturing Units were built.
+  End of production on PL Desktop 3-9. (Ending balance is 0.)
+
+  Start of production on PL Zombie Kitties 2-27. (Initial balance is 47.)
+    3 Colonist Units, 2 Colonial Mining Units, and 1 Colonial Manufacturing
+      Unit were built.
+  End of production on PL Zombie Kitties 2-27. (Ending balance is 41.)
+
+  Start of production on PL Bookend 3-24. (Initial balance is 211.)
+    24 Colonist Units, 17 Colonial Mining Units, and 7 Colonial Manufacturing
+      Units were built.
+  End of production on PL Bookend 3-24. (Ending balance is 163.)
+
+  Start of production on PL Cat 1-18. (Initial balance is 724.)
+! WARNING: build 18 tp
+! Insufficient funds. Substituting 1 for 18.
+    1 Terraforming Plant was produced at a cost of 925.
+    53 Colonist Units, 26 Colonial Mining Units, and 27 Colonial
+      Manufacturing Units were built.
+  End of production on PL Cat 1-18. (Ending balance is 0.)
+
+  Start of production on PL Zombie Dog 2-6. (Initial balance is 1117.)
+! WARNING: build 5 tp
+! Insufficient funds. Substituting 2 for 5.
+    2 Terraforming Plants were produced at a cost of 1850.
+    125 Colonist Units, 59 Colonial Mining Units, and 66 Colonial
+      Manufacturing Units were built.
+  End of production on PL Zombie Dog 2-6. (Ending balance is 0.)
+
+  Start of production on PL Gold Foil Paper 1-0. (Initial balance is 3210.)
+    Size of BAS 36 a was increased to 270,000 tons at a cost of 100.
+    Size of BAS 30 b was increased to 270,000 tons at a cost of 100.
+  End of production on PL Gold Foil Paper 1-0. (Ending balance is 3010.)
+
+  Start of production on PL Bookshelf 2-12. (Initial balance is 3350.)
+    Size of BAS 30 a was increased to 270,000 tons at a cost of 100.
+  End of production on PL Bookshelf 2-12. (Ending balance is 3250.)
+
+  Start of production on PL Libraricus 2-9. (Initial balance is 5246.)
+    Size of BAS 28 a was increased to 270,000 tons at a cost of 100.
+    Size of BAS 36 e was increased to 270,000 tons at a cost of 100.
+    Size of BAS 36 f was increased to 270,000 tons at a cost of 100.
+    Spent 4946 on Military research.
+  End of production on PL Libraricus 2-9. (Ending balance is 0.)
+
+  Start of production on PL Libraricus 1-18. (Initial balance is 4895.)
+    Size of BAS 30 c was increased to 270,000 tons at a cost of 100.
+    Size of BAS 36 g was increased to 270,000 tons at a cost of 100.
+    Spent 4695 on Life Support research.
+  End of production on PL Libraricus 1-18. (Ending balance is 0.)
+
+  Start of production on PL Libraricus. (Initial balance is 4604.)
+    Size of BAS 27 d was increased to 270,000 tons at a cost of 100.
+    Size of BAS 28 c was increased to 270,000 tons at a cost of 100.
+    Size of BAS 32 a was increased to 270,000 tons at a cost of 100.
+    Size of BAS 32 b was increased to 270,000 tons at a cost of 100.
+    Size of BAS 32 c was increased to 270,000 tons at a cost of 100.
+!!! Order ignored:
+!!! build pb 45 a
+!!! Shipyard capacity exceeded!
+    Spent 4104 on Gravitics research.
+  End of production on PL Libraricus. (Ending balance is 0.)
+
+Post-arrival orders:
+    An AUTO order was executed.
+
+Scan done by TR2 Libraricus Watch:
+
+Coordinates:	x = 19	y = 6	z = 13	stellar type =  G2   3 planets.
+
+               Temp  Press Mining
+  #  Dia  Grav Class Class  Diff  LSN  Atmosphere
+ ---------------------------------------------------------------------
+  1   18  1.10  12     9    0.50    0  H2(53%),O2(47%)
+  2   26  1.60  12     9    0.40    0  O2(60%),HCl(40%)
+  3   14  1.06  12     9    2.19    0  NH3(3%),N2(47%),O2(50%)
+
+
+Scan done by PB Bookend Watch:
+
+Coordinates:	x = 22	y = 7	z = 9	stellar type =  A2   5 planets.
+
+               Temp  Press Mining
+  #  Dia  Grav Class Class  Diff  LSN  Atmosphere
+ ---------------------------------------------------------------------
+  1    9  0.67  30     0    1.25   84  No atmosphere
+  2   15  0.98  10     2    1.54   30  NH3(100%)
+  3   20  1.46  10     4    2.09   24  N2(90%),O2(10%)
+  4  127  2.06   3    20    3.82   66  H2(22%),CH4(78%)
+  5   36  2.19   2    11    4.40   42  CH4(85%),N2(15%)
+
+
+Scan done by PB Zombie Kitties Watch:
+
+Coordinates:	x = 8	y = 5	z = 18	stellar type =  O8   6 planets.
+
+               Temp  Press Mining
+  #  Dia  Grav Class Class  Diff  LSN  Atmosphere
+ ---------------------------------------------------------------------
+  1    6  0.38  19     1    1.38   51  F2(90%),H2O(10%)
+  2   11  0.64  14     4    1.21   27  CO2(38%),HCl(62%)
+  3    8  0.49   6     0    1.23   48  No atmosphere
+  4  135  2.30   6    12    2.53   30  NH3(100%)
+  5  159  2.65   6    17    5.74   48  CH4(72%),NH3(28%)
+  6   57  0.76   3    11    2.20   39  H2(63%),CH4(37%)
+
+
+Scan done by TR1 scout 23:
+
+Coordinates:	x = 15	y = 22	z = 17	stellar type =  A6   9 planets.
+
+               Temp  Press Mining
+  #  Dia  Grav Class Class  Diff  LSN  Atmosphere
+ ---------------------------------------------------------------------
+  1    4  0.27  18     3    1.27   45  HCl(40%),F2(45%),H2O(13%),SO2(2%)
+  2   12  0.69  18     1    1.60   51  HCl(81%),Cl2(18%),F2(1%)
+  3   11  0.83   9     9    2.33    9  NH3(74%),O2(26%)
+  4    9  0.63   9     1    1.45   36  CO2(54%),O2(46%)
+  5   22  1.32   9    12    1.60   24  NH3(5%),N2(55%),CO2(40%)
+  6  184  3.24   6    28    5.45   81  CO2(100%)
+  7   75  0.83   3    12    4.00   39  N2(100%)
+  8   19  1.37   3    12    0.94   42  CH4(84%),He(16%)
+  9   47  0.73   3    11    2.09   39  H2(89%),CH4(11%)
+
+
+Strike orders:
+
+Other events:
+  Military tech level rose from 42 to 46.
+  Gravitics tech level rose from 38 to 41.
+  Life Support tech level rose from 43 to 46.
+  You now have the technology to build Forced Jump Units.
+
+
+
+			 SPECIES STATUS
+
+			START OF TURN 46
+
+Species name: Evil Librarians
+Government name: The Reading Room
+Government type: Committee
+
+Tech Levels:
+   Mining = 52
+   Manufacturing = 54
+   Military = 46
+   Gravitics = 41
+   Life Support = 46
+   Biology = 54
+
+Atmospheric Requirement: 25%-100% O2
+Neutral Gases: H2, He, NH3, N2, HCl, H2O
+Poisonous Gases: CH4, CO2, Cl2, F2, SO2, H2S
+
+Fleet maintenance cost = 10006 (28.39% of total production)
+
+Species met: SP LeatherQueer
+
+Enemies: SP LeatherQueer
+
+Economic units = 26781
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+HOME PLANET: PL Libraricus
+   Coordinates: x = 19, y = 6, z = 13, planet number 3
+
+Available population units = 1500
+
+Production penalty = 0% (LSN = 0)
+
+Economic efficiency = 100%
+
+Mining base = 279.8 (MI = 52, MD = 2.19)
+   6643 raw material units will be produced this turn.
+Manufacturing base = 127.8 (MA = 54)
+   Production capacity this turn will be 6901.
+
+Total available for spending this turn = 6643 - 1886 = 4757
+
+Shipyard capacity = 5
+
+Planetary inventory:
+   Colonist Units (CU,C1) = 121
+   Colonial Mining Units (IU,C1) = 16
+   Colonial Manufacturing Units (AU,C1) = 14
+
+Ships at PL Libraricus:
+  Name                                           Cap. Cargo
+ ----------------------------------------------------------------------------
+  BAS 27 d (A7,O3,270000 tons)                   270  
+  BAS 28 c (A7,O3,270000 tons)                   270  
+  BAS 32 a (A5,O3,270000 tons)                   270  
+  BAS 32 b (A4,O3,270000 tons)                   270  
+  BAS 32 c (A4,O3,270000 tons)                   270  
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+COLONY PLANET: PL Libraricus 1-18
+   Coordinates: x = 19, y = 6, z = 13, planet number 1
+
+Available population units = 261
+
+Production penalty = 0% (LSN = 0)
+
+Economic efficiency = 100%
+
+Mining base = 66.6 (MI = 52, MD = 0.50)
+   6926 raw material units will be produced this turn.
+Manufacturing base = 133.4 (MA = 54)
+   Production capacity this turn will be 7203.
+
+Total available for spending this turn = 6926 - 1966 = 4960
+
+Shipyard capacity = 2
+
+Planetary inventory:
+   Colonist Units (CU,C1) = 182
+   Colonial Manufacturing Units (AU,C1) = 60
+   Terraforming Plants (TP,C100) = 1
+
+Ships at PL Libraricus 1-18:
+  Name                                           Cap. Cargo
+ ----------------------------------------------------------------------------
+  BAS 30 c (A7,O1,270000 tons)                   270  
+  BAS 36 g (A4,O1,270000 tons)                   270  
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+COLONY PLANET: PL Libraricus 2-9
+   Coordinates: x = 19, y = 6, z = 13, planet number 2
+
+Available population units = 263
+
+Production penalty = 0% (LSN = 0)
+
+Economic efficiency = 100%
+
+Mining base = 57.1 (MI = 52, MD = 0.40)
+   7423 raw material units will be produced this turn.
+Manufacturing base = 142.9 (MA = 54)
+   Production capacity this turn will be 7716.
+
+Total available for spending this turn = 7423 - 2107 = 5316
+
+Shipyard capacity = 3
+
+Planetary inventory:
+   Colonist Units (CU,C1) = 196
+   Colonial Mining Units (IU,C1) = 25
+   Colonial Manufacturing Units (AU,C1) = 20
+
+Ships at PL Libraricus 2-9:
+  Name                                           Cap. Cargo
+ ----------------------------------------------------------------------------
+  BAS 28 a (A7,O2,270000 tons)                   270  
+  BAS 36 e (A4,O2,270000 tons)                   270  
+  BAS 36 f (A4,O2,270000 tons)                   270  
+  TR2 Libraricus Watch (A32,L2)                   22  
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+COLONY PLANET: PL Bookshelf 2-12
+   Coordinates: x = 21, y = 9, z = 15, planet number 2
+
+Available population units = 240
+
+Production penalty = 0% (LSN = 0)
+
+Economic efficiency = 100%
+
+Mining base = 105.7 (MI = 52, MD = 1.12)
+   4907 raw material units will be produced this turn.
+Manufacturing base = 94.3 (MA = 54)
+   Production capacity this turn will be 5092.
+
+Total available for spending this turn = 4907 - 1393 = 3514
+
+Shipyard capacity = 3
+
+Planetary inventory:
+   Colonial Mining Units (IU,C1) = 32
+   Colonial Manufacturing Units (AU,C1) = 28
+
+Ships at PL Bookshelf 2-12:
+  Name                                           Cap. Cargo
+ ----------------------------------------------------------------------------
+  BAS 30 a (A1,O2,270000 tons)                   270  
+  CS 44 e (A1,L2)                                 25  
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+COLONY PLANET: PL Gold Foil Paper 1-0
+   Coordinates: x = 13, y = 1, z = 14, planet number 1
+
+Available population units = 220
+
+Production penalty = 0% (LSN = 0)
+
+Economic efficiency = 100%
+
+Mining base = 112.7 (MI = 52, MD = 1.29)
+   4542 raw material units will be produced this turn.
+Manufacturing base = 87.3 (MA = 54)
+   Production capacity this turn will be 4714.
+
+Total available for spending this turn = 4542 - 1289 = 3253
+
+Shipyard capacity = 2
+
+Ships at PL Gold Foil Paper 1-0:
+  Name                                           Cap. Cargo
+ ----------------------------------------------------------------------------
+  BAS 36 a (A4,O1,270000 tons)                   270  
+  BAS 30 b (A6,O1,270000 tons)                   270  
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+COLONY PLANET: PL Zombie Dog 2-6
+   Coordinates: x = 11, y = 9, z = 14, planet number 2
+
+Available population units = 113
+
+Production penalty = 13% (LSN = 6)
+
+Economic efficiency = 62%
+
+Mining base = 54.0 (MI = 52, MD = 0.90)
+   1683 raw material units will be produced this turn.
+Manufacturing base = 60.0 (MA = 54)
+   Production capacity this turn will be 1748.
+
+Total available for spending this turn = 1683 - 478 = 1205
+
+Shipyard capacity = 2
+
+Planetary inventory:
+   Colonist Units (CU,C1) = 125
+   Colonial Mining Units (IU,C1) = 102
+   Colonial Manufacturing Units (AU,C1) = 114
+   Terraforming Plants (TP,C100) = 3
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+COLONY PLANET: PL Cat 1-18
+   Coordinates: x = 16, y = 13, z = 14, planet number 1
+
+Available population units = 65
+
+Production penalty = 39% (LSN = 18)
+
+Economic efficiency = 87%
+
+Mining base = 37.2 (MI = 52, MD = 0.96)
+   1070 raw material units will be produced this turn.
+Manufacturing base = 38.8 (MA = 54)
+   Production capacity this turn will be 1112.
+
+Total available for spending this turn = 1070 - 304 = 766
+
+Shipyard capacity = 2
+
+Planetary inventory:
+   Colonist Units (CU,C1) = 53
+   Colonial Mining Units (IU,C1) = 71
+   Colonial Manufacturing Units (AU,C1) = 73
+   Terraforming Plants (TP,C100) = 1
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+COLONY PLANET: PL Bookend 3-24
+   Coordinates: x = 22, y = 7, z = 9, planet number 3
+
+Available population units = 26
+
+Production penalty = 52% (LSN = 24)
+
+Economic efficiency = 100%
+
+Mining base = 28.1 (MI = 52, MD = 2.09)
+   336 raw material units will be produced this turn.
+Manufacturing base = 13.5 (MA = 54)
+   Production capacity this turn will be 350.
+
+Total available for spending this turn = 336 - 95 = 241
+
+Shipyard capacity = 0
+
+Planetary inventory:
+   Colonist Units (CU,C1) = 24
+   Colonial Mining Units (IU,C1) = 79
+   Colonial Manufacturing Units (AU,C1) = 36
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+COLONY PLANET: PL Zombie Kitties 2-27
+   Coordinates: x = 8, y = 5, z = 18, planet number 2
+
+Available population units = 4
+
+Production penalty = 58% (LSN = 27)
+
+Economic efficiency = 100%
+
+Mining base = 4.1 (MI = 52, MD = 1.21)
+   74 raw material units will be produced this turn.
+Manufacturing base = 3.4 (MA = 54)
+   Production capacity this turn will be 77.
+
+Total available for spending this turn = 74 - 21 = 53
+
+Shipyard capacity = 0
+
+Planetary inventory:
+   Colonist Units (CU,C1) = 3
+   Colonial Mining Units (IU,C1) = 2
+   Colonial Manufacturing Units (AU,C1) = 1
+
+Ships at PL Zombie Kitties 2-27:
+  Name                                           Cap. Cargo
+ ----------------------------------------------------------------------------
+  TR10 42 a (A3,O2)                              150  75 CU,41 IU,34 AU
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+COLONY PLANET: PL Desktop 3-9
+   Coordinates: x = 12, y = 12, z = 7, planet number 3
+
+Available population units = 143
+
+Production penalty = 19% (LSN = 9)
+
+Economic efficiency = 64%
+
+Mining base = 57.0 (MI = 52, MD = 0.94)
+   1635 raw material units will be produced this turn.
+Manufacturing base = 60.7 (MA = 54)
+   Production capacity this turn will be 1699.
+
+Total available for spending this turn = 1635 - 464 = 1171
+
+Shipyard capacity = 2
+
+Planetary inventory:
+   Colonist Units (CU,C1) = 129
+   Colonial Mining Units (IU,C1) = 107
+   Colonial Manufacturing Units (AU,C1) = 113
+   Terraforming Plants (TP,C100) = 3
+
+Ships at PL Desktop 3-9:
+  Name                                           Cap. Cargo
+ ----------------------------------------------------------------------------
+  TR7 25 a (A20,O3)                               91  
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+Other planets and ships:
+
+  21  9 15 #1	PL Bookshelf 1-12
+  22  7  9 #5	PL Bookend 5-42
+		PB Bookend Watch (A31,O5)
+  14  2  9 #5	PL Front Desk 5-36
+  13  2 18 #1	PL Bookstop 1-36
+   8  5 18 #6	PL Zombie Kitties in New York 6-39
+		PB Zombie Kitties Watch (A29,O6)
+  17 18 11 #9	PL Dog 9-33
+  22  7  9 #1	PL Bookend 1-84
+  22  7  9 #2	PL Bookend 2-30
+  22  7  9 #4	PL Bookend 4-66
+   8  5 18 #1	PL Zombie Kitties 1-51
+   8  5 18 #3	PL Zombie Kitties 3-48
+   8  5 18 #4	PL Zombie Kitties 4-30
+   8  5 18 #5	PL Zombie Kitties 5-48
+  12 12  7 #7	PL Desktop 7-33
+  13 13  1 #2	PL Oz
+		CL 38 b (A7,O2)
+		CL 38 g (A7,O2)
+		CL 38 h (A7,O2)
+		CL 38 i (A7,O2)
+		CL 38 j (A7,O2)
+		CL 38 k (A7,O2)
+		TR8 38 l (A7,O2)
+		TR8 38 m (A7,O2)
+		CL 38 n (A7,O2)
+		CL 38 o (A7,O2)
+		CL 38 p (A7,O2)
+		CL 39 b (A6,O2)
+		CL 39 c (A6,O2)
+		CL 39 f (A6,O2)
+		CL 39 g (A6,O2)
+		CL 39 h (A6,O2)
+		CL 39 i (A6,O2)
+		CL 39 j (A6,O2)
+		CL 39 k (A6,O2)
+		CL 39 l (A6,O2)
+		CL 39 m (A6,O2)
+		CL 39 n (A6,O2)
+		CL 39 o (A6,O2)
+  13 13  1 #9	PL Oz 9-51
+   6 13  5 #1	PL Umbrella 1-9
+   5 16  8 #5	PL Zappo
+   4  9 11 #1	PL Zigbee 1-36
+   3  8 10 #1	PL Yagz 1-15
+  16 19 13 #1	PL Xax 1-15
+  15 22 17 #3	PL Thor 3-9
+  15 22 17 #5	PL Thor 5-24
+  15 22 17 #9	PL Thor 9-39
+  15 22 17 #1	PL Thor 1-45
+  15 22 17 #2	PL Thor 2-51
+  15 22 17 #4	PL Thor 4-36
+  15 22 17 #6	PL Thor 6-81
+  15 22 17 #7	PL Thor 7-39
+  15 22 17 #8	PL Thor 8-42
+  12 13  1	CL 38 c (A7,D)
+  15 22 17	TR1 scout 23 (A22,D)
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+Aliens at x = 11, y = 9, z = 14 (PL Zombie Dog 2-6 star system):
+  Colony planet PL F2-6 (pl #2)                      SP LeatherQueer
+      (Economic base is approximately 220.)
+      (There is 1 shipyard on the planet.)
+
+
+Aliens at x = 16, y = 13, z = 14 (PL Cat 1-18 star system):
+  Colony planet PL I1 (pl #1)                        SP LeatherQueer
+      (Economic base is approximately 160.)
+
+
+Aliens at x = 12, y = 12, z = 7 (PL Desktop 3-9 star system):
+  Colony planet PL Alpha3 (pl #3)                    SP LeatherQueer
+      (Economic base is approximately 200.)
+
+
+Aliens at x = 15, y = 22, z = 17 (PL Thor 3-9 star system):
+  Colony planet PL Q3 (pl #3)                        SP LeatherQueer
+      (Economic base is approximately 70.)
+
+
+Aliens at x = 13, y = 13, z = 1 (PL Oz star system):
+  TR15 F2-6-31 (A2,O2)                               SP LeatherQueer
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+ORDER SECTION. Remove these two lines and everything above
+  them, and submit only the orders below.
+
+START COMBAT
+; Place combat orders here.
+
+END
+
+START PRE-DEPARTURE
+; Place pre-departure orders here.
+
+	Install	59 IU	PL Zombie Dog 2-6
+	Install	66 AU	PL Zombie Dog 2-6
+
+	Install	26 IU	PL Cat 1-18
+	Install	27 AU	PL Cat 1-18
+
+	Install	17 IU	PL Bookend 3-24
+	Install	7 AU	PL Bookend 3-24
+
+	Install	2 IU	PL Zombie Kitties 2-27
+	Install	1 AU	PL Zombie Kitties 2-27
+
+	Unload	TR10 42 a
+
+	Install	63 IU	PL Desktop 3-9
+	Install	66 AU	PL Desktop 3-9
+
+END
+
+START JUMPS
+; Place jump orders here.
+
+	Jump	TR7 25 a, PL Desktop 3-9	; mishap chance = 40.00%
+
+	Jump	TR10 42 a, PL Libraricus	; Age 3, mishap chance = 9.36%
+
+	Jump	CL 38 c, ???	; Age 7, now at 12 13 1, D
+	Jump	TR2 Libraricus Watch, ???	; Age 32, now at 19 6 13, L2
+	Jump	PB Bookend Watch, ???	; Age 31, now at 22 7 9, O5
+	Jump	TR1 scout 23, ???
+			; Age 22, now at 15 22 17, D, Mishap chance = ???
+	Jump	PB Zombie Kitties Watch, ???	; Age 29, now at 8 5 18, O6
+	Jump	CL 38 b, ???	; Age 7, now at 13 13 1, O2
+	Jump	CL 38 g, ???	; Age 7, now at 13 13 1, O2
+	Jump	CL 38 h, ???	; Age 7, now at 13 13 1, O2
+	Jump	CL 38 i, ???	; Age 7, now at 13 13 1, O2
+	Jump	CL 38 j, ???	; Age 7, now at 13 13 1, O2
+	Jump	CL 38 k, ???	; Age 7, now at 13 13 1, O2
+	Jump	TR8 38 l, ???	; Age 7, now at 13 13 1, O2
+	Jump	TR8 38 m, ???	; Age 7, now at 13 13 1, O2
+	Jump	CL 38 n, ???	; Age 7, now at 13 13 1, O2
+	Jump	CL 38 o, ???	; Age 7, now at 13 13 1, O2
+	Jump	CL 38 p, ???	; Age 7, now at 13 13 1, O2
+	Jump	CL 39 b, ???	; Age 6, now at 13 13 1, O2
+	Jump	CL 39 c, ???	; Age 6, now at 13 13 1, O2
+	Jump	CL 39 f, ???	; Age 6, now at 13 13 1, O2
+	Jump	CL 39 g, ???	; Age 6, now at 13 13 1, O2
+	Jump	CL 39 h, ???	; Age 6, now at 13 13 1, O2
+	Jump	CL 39 i, ???	; Age 6, now at 13 13 1, O2
+	Jump	CL 39 j, ???	; Age 6, now at 13 13 1, O2
+	Jump	CL 39 k, ???	; Age 6, now at 13 13 1, O2
+	Jump	CL 39 l, ???	; Age 6, now at 13 13 1, O2
+	Jump	CL 39 m, ???	; Age 6, now at 13 13 1, O2
+	Jump	CL 39 n, ???	; Age 6, now at 13 13 1, O2
+	Jump	CL 39 o, ???	; Age 6, now at 13 13 1, O2
+	Jump	CS 44 e, ???	; Age 1, now at 21 9 15, L2
+END
+
+START PRODUCTION
+
+;   Economic units at start of turn = 26781
+
+    PRODUCTION PL Desktop 3-9
+    ; Place production orders here for planet Desktop 3-9 (sector 12 12 7 #3).
+    ;  Avail pop = 143, shipyards = 2, to spend = 1171 (max = 2342).
+
+	Develop	286
+
+    PRODUCTION PL Zombie Kitties 2-27
+    ; Place production orders here for planet Zombie Kitties 2-27 (sector 8 5 18 #2).
+    ;  Avail pop = 4, shipyards = 0, to spend = 53 (max = 106).
+
+	Develop	8
+
+    PRODUCTION PL Bookend 3-24
+    ; Place production orders here for planet Bookend 3-24 (sector 22 7 9 #3).
+    ;  Avail pop = 26, shipyards = 0, to spend = 241 (max = 482).
+
+	Develop	52
+
+    PRODUCTION PL Cat 1-18
+    ; Place production orders here for planet Cat 1-18 (sector 16 13 14 #1).
+    ;  Avail pop = 65, shipyards = 2, to spend = 766 (max = 1532).
+
+	Develop	130
+
+    PRODUCTION PL Zombie Dog 2-6
+    ; Place production orders here for planet Zombie Dog 2-6 (sector 11 9 14 #2).
+    ;  Avail pop = 113, shipyards = 2, to spend = 1205 (max = 2410).
+
+	Develop	226
+
+    PRODUCTION PL Gold Foil Paper 1-0
+    ; Place production orders here for planet Gold Foil Paper 1-0 (sector 13 1 14 #1).
+    ;  Avail pop = 220, shipyards = 2, to spend = 3253 (max = 6506).
+
+    PRODUCTION PL Bookshelf 2-12
+    ; Place production orders here for planet Bookshelf 2-12 (sector 21 9 15 #2).
+    ;  Avail pop = 240, shipyards = 3, to spend = 3514 (max = 7028).
+
+    PRODUCTION PL Libraricus 2-9
+    ; Place production orders here for planet Libraricus 2-9 (sector 19 6 13 #2).
+    ;  Avail pop = 263, shipyards = 3, to spend = 5316 (max = 10632).
+
+    PRODUCTION PL Libraricus 1-18
+    ; Place production orders here for planet Libraricus 1-18 (sector 19 6 13 #1).
+    ;  Avail pop = 261, shipyards = 2, to spend = 4960 (max = 9920).
+
+    PRODUCTION PL Libraricus
+    ; Place production orders here for planet Libraricus (sector 19 6 13 #3).
+    ;  Avail pop = 1500, shipyards = 5, to spend = 4757 (max = no limit).
+
+	Develop	PL Zombie Kitties 2-27, TR10 42 a
+
+END
+
+START POST-ARRIVAL
+; Place post-arrival orders here.
+
+	Auto
+
+	Scan	TR1 scout 23
+END
+
+START STRIKES
+; Place strike orders here.
+
+END

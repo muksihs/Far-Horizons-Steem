@@ -1,0 +1,562 @@
+
+
+			EVENT LOG FOR TURN 45
+
+Combat orders:
+
+Pre-departure orders:
+    Installation of 15 Colonial Mining Units began on PL C3.
+    Installation of 11 Colonial Manufacturing Units began on PL C3.
+    Installation of 39 Colonial Mining Units began on PL E1.
+    Installation of 34 Colonial Manufacturing Units began on PL E1.
+    Installation of 49 Colonial Mining Units began on PL I1.
+    Installation of 52 Colonial Manufacturing Units began on PL I1.
+    Installation of 11 Colonial Mining Units began on PL P1.
+    Installation of 11 Colonial Manufacturing Units began on PL P1.
+    Installation of 22 Colonial Mining Units began on PL Q3.
+    Installation of 10 Colonial Manufacturing Units began on PL Q3.
+
+Jump orders:
+    TR15 F2-6-31 will try to jump to PL Oz (10.41%).
+
+Production orders:
+
+  Number of economic units at start of production: 0
+
+  Start of production on PL Q3. (Initial balance is 282.)
+    33 Colonist Units, 23 Colonial Mining Units, and 10 Colonial
+      Manufacturing Units were built.
+    Spent 216 on Manufacturing research.
+  End of production on PL Q3. (Ending balance is 0.)
+
+  Start of production on PL P1. (Initial balance is 277.)
+    23 Colonist Units, 12 Colonial Mining Units, and 11 Colonial
+      Manufacturing Units were built.
+    Spent 231 on Manufacturing research.
+  End of production on PL P1. (Ending balance is 0.)
+
+  Start of production on PL I1. (Initial balance is 1609.)
+    108 Colonist Units, 53 Colonial Mining Units, and 55 Colonial
+      Manufacturing Units were built.
+    Spent 1393 on Manufacturing research.
+  End of production on PL I1. (Ending balance is 0.)
+
+  Start of production on PL F2-6. (Initial balance is 2991.)
+    Spent 2991 on Manufacturing research.
+  End of production on PL F2-6. (Ending balance is 0.)
+
+  Start of production on PL E1. (Initial balance is 1099.)
+    78 Colonist Units, 41 Colonial Mining Units, and 37 Colonial
+      Manufacturing Units were built.
+    Spent 943 on Manufacturing research.
+  End of production on PL E1. (Ending balance is 0.)
+
+  Start of production on PL C3. (Initial balance is 324.)
+    27 Colonist Units, 16 Colonial Mining Units, and 11 Colonial
+      Manufacturing Units were built.
+    Spent 270 on Manufacturing research.
+  End of production on PL C3. (Ending balance is 0.)
+
+  Start of production on PL Beta. (Initial balance is 1564.)
+    Spent 1564 on Manufacturing research.
+  End of production on PL Beta. (Ending balance is 0.)
+
+  Start of production on PL Alpha3. (Initial balance is 1303.)
+    Spent 1303 on Manufacturing research.
+  End of production on PL Alpha3. (Ending balance is 0.)
+
+Post-arrival orders:
+    An AUTO order was executed.
+
+Strike orders:
+
+Other events:
+  Manufacturing tech level rose from 41 to 44.
+
+
+
+			 SPECIES STATUS
+
+			START OF TURN 46
+
+Species name: LeatherQueer
+Government name: Reinbeaux
+Government type: Glittery
+
+Tech Levels:
+   Mining = 41
+   Manufacturing = 44
+   Military = 11
+   Gravitics = 22
+   Life Support = 28
+   Biology = 54
+
+Atmospheric Requirement: 10%-42% O2
+Neutral Gases: H2, CH4, He, N2, HCl, H2O
+Poisonous Gases: NH3, CO2, Cl2, F2, SO2, H2S
+
+Fleet maintenance cost = 57 (0.59% of total production)
+
+Species met: SP Evil Librarians
+
+Economic units = 0
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+HOME PLANET: PL Oz
+   Coordinates: x = 13, y = 13, z = 1, planet number 2
+
+WARNING! Home planet has not yet completely recovered from bombardment!
+         2653 IUs and 1212 AUs will have to be installed for complete recovery.
+
+Ships at PL Oz:
+  Name                                           Cap. Cargo
+ ----------------------------------------------------------------------------
+  TR15 F2-6-31 (A2,O2)                           255  127 CU,87 IU,40 AU
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+COLONY PLANET: PL Alpha3
+   Coordinates: x = 12, y = 12, z = 7, planet number 3
+
+Available population units = 120
+
+Production penalty = 53% (LSN = 15)
+
+Economic efficiency = 64%
+
+Mining base = 96.9 (MI = 41, MD = 0.94)
+   1272 raw material units will be produced this turn.
+Manufacturing base = 103.1 (MA = 44)
+   Production capacity this turn will be 1364.
+
+Total available for spending this turn = 1272 - 8 = 1264
+
+Shipyard capacity = 0
+
+Planetary inventory:
+   Colonial Mining Units (IU,C1) = 73
+   Colonial Manufacturing Units (AU,C1) = 227
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+COLONY PLANET: PL Beta
+   Coordinates: x = 6, y = 13, z = 5, planet number 1
+
+Available population units = 120
+
+Production penalty = 53% (LSN = 15)
+
+Economic efficiency = 100%
+
+Mining base = 118.4 (MI = 41, MD = 1.45)
+   1574 raw material units will be produced this turn.
+Manufacturing base = 81.6 (MA = 44)
+   Production capacity this turn will be 1688.
+
+Raw Material Units (RM,C1) carried over from last turn = 1
+
+Total available for spending this turn = 1575 - 9 = 1566
+
+Shipyard capacity = 0
+
+Planetary inventory:
+   Colonial Mining Units (IU,C1) = 89
+   Colonial Manufacturing Units (AU,C1) = 61
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+COLONY PLANET: PL C3
+   Coordinates: x = 5, y = 16, z = 8, planet number 3
+
+Available population units = 29
+
+Production penalty = 64% (LSN = 18)
+
+Economic efficiency = 100%
+
+Mining base = 32.4 (MI = 41, MD = 1.40)
+   342 raw material units will be produced this turn.
+Manufacturing base = 23.2 (MA = 44)
+   Production capacity this turn will be 368.
+
+Total available for spending this turn = 342 - 2 = 340
+
+Shipyard capacity = 0
+
+Planetary inventory:
+   Colonist Units (CU,C1) = 27
+   Colonial Mining Units (IU,C1) = 16
+   Colonial Manufacturing Units (AU,C1) = 11
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+COLONY PLANET: PL E1
+   Coordinates: x = 3, y = 8, z = 10, planet number 1
+
+Available population units = 82
+
+Production penalty = 53% (LSN = 15)
+
+Economic efficiency = 100%
+
+Mining base = 69.4 (MI = 41, MD = 1.14)
+   1173 raw material units will be produced this turn.
+Manufacturing base = 60.8 (MA = 44)
+   Production capacity this turn will be 1258.
+
+Raw Material Units (RM,C1) carried over from last turn = 1
+
+Total available for spending this turn = 1174 - 7 = 1167
+
+Shipyard capacity = 0
+
+Planetary inventory:
+   Colonist Units (CU,C1) = 78
+   Colonial Mining Units (IU,C1) = 121
+   Colonial Manufacturing Units (AU,C1) = 107
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+COLONY PLANET: PL F2-6
+   Coordinates: x = 11, y = 9, z = 14, planet number 2
+
+Available population units = 261
+
+Production penalty = 0% (LSN = 0)
+
+Economic efficiency = 62%
+
+Mining base = 103.2 (MI = 41, MD = 0.90)
+   2915 raw material units will be produced this turn.
+Manufacturing base = 114.8 (MA = 44)
+   Production capacity this turn will be 3132.
+
+Total available for spending this turn = 2915 - 17 = 2898
+
+Shipyard capacity = 1
+
+Planetary inventory:
+   Colonial Mining Units (IU,C1) = 121
+   Colonial Manufacturing Units (AU,C1) = 134
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+COLONY PLANET: PL I1
+   Coordinates: x = 16, y = 13, z = 14, planet number 1
+
+Available population units = 116
+
+Production penalty = 42% (LSN = 12)
+
+Economic efficiency = 87%
+
+Mining base = 76.0 (MI = 41, MD = 0.96)
+   1638 raw material units will be produced this turn.
+Manufacturing base = 79.2 (MA = 44)
+   Production capacity this turn will be 1758.
+
+Raw Material Units (RM,C1) carried over from last turn = 1
+
+Total available for spending this turn = 1639 - 10 = 1629
+
+Shipyard capacity = 0
+
+Planetary inventory:
+   Colonist Units (CU,C1) = 108
+   Colonial Mining Units (IU,C1) = 199
+   Colonial Manufacturing Units (AU,C1) = 209
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+COLONY PLANET: PL P1
+   Coordinates: x = 16, y = 19, z = 13, planet number 1
+
+Available population units = 24
+
+Production penalty = 75% (LSN = 21)
+
+Economic efficiency = 100%
+
+Mining base = 31.1 (MI = 41, MD = 1.10)
+   290 raw material units will be produced this turn.
+Manufacturing base = 28.3 (MA = 44)
+   Production capacity this turn will be 312.
+
+Raw Material Units (RM,C1) carried over from last turn = 1
+
+Total available for spending this turn = 291 - 2 = 289
+
+Shipyard capacity = 0
+
+Planetary inventory:
+   Colonist Units (CU,C1) = 23
+   Colonial Mining Units (IU,C1) = 12
+   Colonial Manufacturing Units (AU,C1) = 11
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+COLONY PLANET: PL Q3
+   Coordinates: x = 15, y = 22, z = 17, planet number 3
+
+Available population units = 35
+
+Production penalty = 64% (LSN = 18)
+
+Economic efficiency = 100%
+
+Mining base = 47.1 (MI = 41, MD = 2.33)
+   299 raw material units will be produced this turn.
+Manufacturing base = 20.2 (MA = 44)
+   Production capacity this turn will be 320.
+
+Raw Material Units (RM,C1) carried over from last turn = 1
+
+Total available for spending this turn = 300 - 2 = 298
+
+Shipyard capacity = 0
+
+Planetary inventory:
+   Colonist Units (CU,C1) = 33
+   Colonial Mining Units (IU,C1) = 23
+   Colonial Manufacturing Units (AU,C1) = 10
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+Other planets and ships:
+
+  12 12  7 #1	PL Alpha1
+  12 12  7 #2	PL Alpha2
+  12 12  7 #4	PL Alpha4
+  12 12  7 #5	PL Alpha5
+  12 12  7 #6	PL Alpha6
+  12 12  7 #7	PL Alpha7
+   5 16  8 #1	PL C1
+   5 16  8 #2	PL C2
+   5 16  8 #4	PL C4
+   5 16  8 #5	PL C5
+   4  9 11 #1	PL Delta
+  11  9 14 #1	PL F1-21
+   8  5 18 #1	PL G1-51
+   8  5 18 #2	PL G2-27
+   8  5 18 #3	PL G3-54
+   8  5 18 #4	PL G4-33
+   8  5 18 #5	PL G5-48
+   8  5 18 #6	PL G6-36
+  13 13  1 #1	PL O1
+  13 13  1 #3	PL O3
+  13 13  1 #4	PL O4
+  13 13  1 #5	PL O5
+  13 13  1 #6	PL O6
+  13 13  1 #7	PL O7
+  13 13  1 #8	PL O8
+  13 13  1 #9	PL O9
+  17 18 11 #1	PL H1
+  17 18 11 #2	PL H2
+  17 18 11 #3	PL H3
+  17 18 11 #4	PL H4
+  17 18 11 #5	PL H5
+  17 18 11 #6	PL H6
+  17 18 11 #7	PL H7
+  17 18 11 #8	PL H8
+  17 18 11 #9	PL H9
+  21  9 15 #1	PL J1
+  21  9 15 #2	PL J2
+  19  6 13 #1	PL Libraricus
+  19  6 13 #2	PL Libraricus2
+  19  6 13 #3	PL Libraricus3
+  22  7  9 #1	PL K1
+  22  7  9 #2	PL K2
+  22  7  9 #3	PL K3
+  22  7  9 #4	PL K4
+  22  7  9 #5	PL K5
+  14  2  9 #1	PL L1
+  14  2  9 #2	PL L2
+  14  2  9 #3	PL L3
+  14  2  9 #4	PL L4
+  14  2  9 #5	PL L5
+  13  1 14 #1	PL M1
+  13  2 18 #1	PL N1
+  15 22 17 #1	PL Q1
+  15 22 17 #2	PL Q2
+  15 22 17 #4	PL Q4
+  15 22 17 #5	PL Q5
+  15 22 17 #6	PL Q6
+  15 22 17 #7	PL Q7
+  15 22 17 #8	PL Q8
+  15 22 17 #9	PL Q9
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+Aliens at x = 12, y = 12, z = 7 (PL Alpha1 star system):
+  Colony planet PL Desktop 3-9 (pl #3)               SP Evil Librarians
+      (Economic base is approximately 120.)
+      (There are 2 shipyards on the planet.)
+  TR7 25 a (A20,O3)                                  SP Evil Librarians
+
+
+Aliens at x = 11, y = 9, z = 14 (PL F1-21 star system):
+  Colony planet PL Zombie Dog 2-6 (pl #2)            SP Evil Librarians
+      (Economic base is approximately 110.)
+      (There are 2 shipyards on the planet.)
+
+
+Aliens at x = 16, y = 13, z = 14 (PL I1 star system):
+  Colony planet PL Cat 1-18 (pl #1)                  SP Evil Librarians
+      (Economic base is approximately 80.)
+      (There are 2 shipyards on the planet.)
+
+
+Aliens at x = 15, y = 22, z = 17 (PL Q1 star system):
+  TR1 scout 23 (A22,D)                               SP Evil Librarians
+
+
+Aliens at x = 13, y = 13, z = 1 (PL Oz star system):
+  CL 38 b (A7,O2)                                    SP Evil Librarians
+  CL 38 g (A7,O2)                                    SP Evil Librarians
+  CL 38 h (A7,O2)                                    SP Evil Librarians
+  CL 38 i (A7,O2)                                    SP Evil Librarians
+  CL 38 j (A7,O2)                                    SP Evil Librarians
+  CL 38 k (A7,O2)                                    SP Evil Librarians
+  TR8 38 l (A7,O2)                                   SP Evil Librarians
+  TR8 38 m (A7,O2)                                   SP Evil Librarians
+  CL 38 n (A7,O2)                                    SP Evil Librarians
+  CL 38 o (A7,O2)                                    SP Evil Librarians
+  CL 38 p (A7,O2)                                    SP Evil Librarians
+  CL 39 b (A6,O2)                                    SP Evil Librarians
+  CL 39 c (A6,O2)                                    SP Evil Librarians
+  CL 39 f (A6,O2)                                    SP Evil Librarians
+  CL 39 g (A6,O2)                                    SP Evil Librarians
+  CL 39 h (A6,O2)                                    SP Evil Librarians
+  CL 39 i (A6,O2)                                    SP Evil Librarians
+  CL 39 j (A6,O2)                                    SP Evil Librarians
+  CL 39 k (A6,O2)                                    SP Evil Librarians
+  CL 39 l (A6,O2)                                    SP Evil Librarians
+  CL 39 m (A6,O2)                                    SP Evil Librarians
+  CL 39 n (A6,O2)                                    SP Evil Librarians
+  CL 39 o (A6,O2)                                    SP Evil Librarians
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * *
+
+
+ORDER SECTION. Remove these two lines and everything above
+  them, and submit only the orders below.
+
+START COMBAT
+; Place combat orders here.
+
+END
+
+START PRE-DEPARTURE
+; Place pre-departure orders here.
+
+	Unload	TR15 F2-6-31
+
+	Install	16 IU	PL C3
+	Install	11 AU	PL C3
+
+	Install	41 IU	PL E1
+	Install	37 AU	PL E1
+
+	Install	53 IU	PL I1
+	Install	55 AU	PL I1
+
+	Install	12 IU	PL P1
+	Install	11 AU	PL P1
+
+	Install	23 IU	PL Q3
+	Install	10 AU	PL Q3
+
+END
+
+START JUMPS
+; Place jump orders here.
+
+	Jump	TR15 F2-6-31, PL F2-6	; Age 2, mishap chance = 12.24%
+
+END
+
+START PRODUCTION
+
+;   Economic units at start of turn = 0
+
+    PRODUCTION PL Q3
+    ; Place production orders here for planet Q3 (sector 15 22 17 #3).
+    ;  Avail pop = 35, shipyards = 0, to spend = 298 (max = 596).
+
+	Develop	70
+
+    PRODUCTION PL P1
+    ; Place production orders here for planet P1 (sector 16 19 13 #1).
+    ;  Avail pop = 24, shipyards = 0, to spend = 289 (max = 578).
+
+	Develop	48
+
+    PRODUCTION PL I1
+    ; Place production orders here for planet I1 (sector 16 13 14 #1).
+    ;  Avail pop = 116, shipyards = 0, to spend = 1629 (max = 3258).
+
+	Develop	232
+
+    PRODUCTION PL F2-6
+    ; Place production orders here for planet F2-6 (sector 11 9 14 #2).
+    ;  Avail pop = 261, shipyards = 1, to spend = 2898 (max = 5796).
+
+	Develop	PL Oz, TR15 F2-6-31
+
+    PRODUCTION PL E1
+    ; Place production orders here for planet E1 (sector 3 8 10 #1).
+    ;  Avail pop = 82, shipyards = 0, to spend = 1167 (max = 2334).
+
+	Develop	164
+
+    PRODUCTION PL C3
+    ; Place production orders here for planet C3 (sector 5 16 8 #3).
+    ;  Avail pop = 29, shipyards = 0, to spend = 340 (max = 680).
+
+	Develop	58
+
+    PRODUCTION PL Beta
+    ; Place production orders here for planet Beta (sector 6 13 5 #1).
+    ;  Avail pop = 120, shipyards = 0, to spend = 1566 (max = 3132).
+
+    PRODUCTION PL Alpha3
+    ; Place production orders here for planet Alpha3 (sector 12 12 7 #3).
+    ;  Avail pop = 120, shipyards = 0, to spend = 1264 (max = 2528).
+
+END
+
+START POST-ARRIVAL
+; Place post-arrival orders here.
+
+	Auto
+
+END
+
+START STRIKES
+; Place strike orders here.
+
+END
