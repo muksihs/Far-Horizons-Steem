@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.NumberFormat;
@@ -38,6 +37,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.muksihs.farhorizons.ipfs.IpfsFolder;
 import com.muksihs.farhorizons.steemapi.RcAccount;
 import com.muksihs.farhorizons.steemapi.RcAccounts;
 import com.muksihs.farhorizons.steemapi.SteemRcApi;
@@ -65,7 +65,6 @@ import eu.bittrade.libs.steemj.enums.PrivateKeyType;
 import eu.bittrade.libs.steemj.exceptions.SteemCommunicationException;
 import eu.bittrade.libs.steemj.exceptions.SteemInvalidTransactionException;
 import eu.bittrade.libs.steemj.exceptions.SteemResponseException;
-import eu.bittrade.libs.steemj.image.upload.SteemJImageUpload;
 import eu.bittrade.libs.steemj.util.SteemJUtils;
 import models.FarHorizonsGameData;
 import models.NewGameInfo;
@@ -1134,11 +1133,11 @@ public class FarHorizonsApp implements Runnable {
 			} else {
 				@SuppressWarnings("unused")
 				String newTurnPermlink = postTurnResults(gameDir);
-				// postGameMaps(gameDir, new Permlink(newTurnPermlink), tags);
-				// for (String player : playerPermlinks.keySet()) {
-				// Permlink playerPermlink = playerPermlinks.get(player);
-				// markTurnComplete(player, playerPermlink, newTurnPermlink, tags);
-				// }
+				 postGameMaps(gameDir, new Permlink(newTurnPermlink));
+//				 for (String player : playerPermlinks.keySet()) {
+//				 Permlink playerPermlink = playerPermlinks.get(player);
+//				 markTurnComplete(player, playerPermlink, newTurnPermlink, tags);
+//				 }
 			}
 		}
 	}
@@ -1619,7 +1618,7 @@ public class FarHorizonsApp implements Runnable {
 	}
 
 	@SuppressWarnings("unused")
-	private void postGameMaps(File gameDir, Permlink parentPermlink, Set<String> tags) {
+	private void postGameMaps(File gameDir, Permlink parentPermlink) {
 		String mapImagesHtml = getMapImagesHtml(gameDir);
 		if (mapImagesHtml.isEmpty()) {
 			System.out.println("NO MAPS TO POST!");
@@ -1634,7 +1633,8 @@ public class FarHorizonsApp implements Runnable {
 			waitIfLowBandwidth();
 			sleep(25l * 1000l);// 25 seconds
 			try {
-				steemJ.createComment(botAccount, parentPermlink, sb.toString(), tags.toArray(new String[0]), MIME_HTML,
+				String[] tags = getGameTurnTags(gameDir);
+				steemJ.createComment(botAccount, parentPermlink, sb.toString(), tags, MIME_HTML,
 						defaultMetadata);
 				System.out.println("MAPS POSTED! [" + parentPermlink.getLink() + "]");
 				return;
@@ -2185,71 +2185,65 @@ public class FarHorizonsApp implements Runnable {
 			return "";
 		}
 		StringBuilder html = new StringBuilder();
-		html.append("<br/>");
-		html.append("<div>");
-		html.append(DIV_PULL_LEFT_START);
-		html.append("<a href='");
+		html.append("<html><table><tr>");
+		html.append("<td><a href='");
 		html.append(urls.get(0));
 		html.append("'><img src='");
 		html.append(urls.get(0));
-		html.append("'/></a></div>");
+		html.append("'/></a></td>");
 		if (urls.size() > 1) {
-			html.append(DIV_PULL_RIGHT_START);
-			html.append("<a href='");
+			html.append("<td><a href='");
 			html.append(urls.get(1));
 			html.append("'><img src='");
 			html.append(urls.get(1));
-			html.append("'/></a></div>");
-			html.append("<br/>");
+			html.append("'/></a></td>");
 		}
 		if (urls.size() > 2) {
-			html.append(DIV_PULL_LEFT_START);
-			html.append("<a href='");
+			html.append("<td><a href='");
 			html.append(urls.get(2));
 			html.append("'><img src='");
 			html.append(urls.get(2));
-			html.append("'/></a></div>");
+			html.append("'/></a></td>");
 		}
-		html.append("</div>");
-		html.append("<br/>");
+		html.append("</tr></table></html>");
 		return html.toString();
 	}
 
 	private List<String> getMapUrls(File gameDir) {
 		File mapUrlsFile = new File(gameDir, "steem-data/map-urls.txt");
-		List<String> mapUrlsList;
-		try {
-			mapUrlsList = FileUtils.readLines(mapUrlsFile, StandardCharsets.UTF_8);
-		} catch (IOException e) {
-			mapUrlsList = new ArrayList<>();
-		}
-		if (mapUrlsList.size() == MAP_LIST.length) {
-			return mapUrlsList;
-		}
-		mapUrlsList.clear();
-		for (String map : MAP_LIST) {
-			File imgFile = new File(gameDir, "maps/" + map);
-			if (!imgFile.exists()) {
-				System.err.println("Warning: Map file " + imgFile.getName() + " does not exist.");
-				continue;
+		Set<String> mapUrlsList = new HashSet<>();
+		String parentFolder = "/Far-Horizons-Steem/Maps/"+gameDir.getName()+"/";
+		try (IpfsFolder ipfs = new IpfsFolder(parentFolder)) {
+			for (String map : MAP_LIST) {
+				File imgFile = new File(gameDir, "maps/" + map);
+				if (!imgFile.exists()) {
+					System.err.println("Warning: Map file " + imgFile.getName() + " does not exist.");
+					continue;
+				}
+				ipfs.add(imgFile);
 			}
-			eu.bittrade.libs.steemj.image.upload.models.AccountName uploadAccount = new eu.bittrade.libs.steemj.image.upload.models.AccountName(
-					accountName);
+			String hash;
 			try {
-				URL imgUrl = SteemJImageUpload.uploadImage(uploadAccount, postingKey, imgFile);
-				mapUrlsList.add(imgUrl.toExternalForm());
-			} catch (IOException e) {
-				System.err.println("UPLOADING IMAGE " + imgFile.getAbsolutePath());
-				e.printStackTrace();
+				hash = ipfs.commit();
+			} catch (IOException e1) {
+				return new ArrayList<>();
 			}
+			Random r = new Random();
+			for (String map: MAP_LIST) {
+				if (r.nextBoolean()) {
+					mapUrlsList.add("https://cloudflare-ipfs.com/ipfs/"+hash+parentFolder+map);
+				} else {
+					mapUrlsList.add("https://ipfs.io/ipfs/"+hash+parentFolder+map);
+				}
+			}
+		} catch (Exception e) {
+			return new ArrayList<>();
 		}
 		try {
 			FileUtils.writeLines(mapUrlsFile, StandardCharsets.UTF_8.name(), mapUrlsList);
 		} catch (IOException e) {
-			System.err.println("SAVING MAPS URLS " + mapUrlsFile.getAbsolutePath());
-			e.printStackTrace();
 		}
-		return mapUrlsList;
+		return new ArrayList<>(mapUrlsList);
 	}
 
 	public static String basicEscape(String text) {
@@ -2281,6 +2275,7 @@ public class FarHorizonsApp implements Runnable {
 
 	private void postGameCompleteDetails(AccountName parentAuthor, Permlink parentPermlink, File gameDir, String tn,
 			String[] tags) throws IOException {
+		if (true) return; //this is an RCs killer, TODO: switch to IPFS based solution
 		List<String> stats = getUncompressedSpeciesStatus(gameDir, tn);
 		for (String stat : stats) {
 			doPost: while (true) {
@@ -2479,12 +2474,7 @@ public class FarHorizonsApp implements Runnable {
 
 		String tn = getTurnNumber(gameDir);
 		String title = generateTurnTitle(gameDir, tn);
-		String[] tags = new String[5];
-		tags[0] = "playbypost";
-		tags[1] = "far-horizons";
-		tags[2] = gameDir.getName();
-		tags[3] = "games";
-		tags[4] = "contest";
+		String[] tags = getGameTurnTags(gameDir);
 		while (true) {
 			boolean isUpdate = false;
 			Permlink permlink = new Permlink(SteemJUtils.createPermlinkString(title));
@@ -2522,8 +2512,18 @@ public class FarHorizonsApp implements Runnable {
 		}
 	}
 
+	private String[] getGameTurnTags(File gameDir) {
+		String[] tags = new String[5];
+		tags[0] = "playbypost";
+		tags[1] = "far-horizons";
+		tags[2] = gameDir.getName();
+		tags[3] = "games";
+		tags[4] = "strategy";
+		return tags;
+	}
+
 	private String generateTurnTitle(File gameDir, String tn) {
-		String title = "Far Horizons Steem - Start of Turn " + tn + " -- For Game "
+		String title = "Far Horizons Steem - Start of Turn " + tn + " - For Game "
 				+ gameDir.getName().replaceAll("[^\\d]", "");
 		return title;
 	}
