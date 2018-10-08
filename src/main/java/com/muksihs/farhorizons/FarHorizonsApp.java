@@ -2185,6 +2185,7 @@ public class FarHorizonsApp implements Runnable {
 			String[] tags) throws IOException {
 		if (true)
 			return; // this is an RCs killer, TODO: switch to IPFS based solution
+		@SuppressWarnings("unused")
 		List<String> stats = getUncompressedSpeciesStatus(gameDir, tn);
 		for (String stat : stats) {
 			doPost: while (true) {
