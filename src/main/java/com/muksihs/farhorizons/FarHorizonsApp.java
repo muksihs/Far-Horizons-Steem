@@ -43,6 +43,7 @@ import com.muksihs.farhorizons.steemapi.RcAccounts;
 import com.muksihs.farhorizons.steemapi.SteemRcApi;
 
 import blazing.chain.LZSEncoding;
+import eu.bittrade.libs.steemj.SteemJ;
 import eu.bittrade.libs.steemj.apis.database.models.state.Comment;
 import eu.bittrade.libs.steemj.apis.database.models.state.Discussion;
 import eu.bittrade.libs.steemj.apis.follow.model.BlogEntry;
@@ -53,6 +54,7 @@ import eu.bittrade.libs.steemj.base.models.Asset;
 import eu.bittrade.libs.steemj.base.models.ExtendedAccount;
 import eu.bittrade.libs.steemj.base.models.Permlink;
 import eu.bittrade.libs.steemj.base.models.SignedTransaction;
+import eu.bittrade.libs.steemj.base.models.TimePointSec;
 import eu.bittrade.libs.steemj.base.models.VoteState;
 import eu.bittrade.libs.steemj.base.models.operations.CommentOperation;
 import eu.bittrade.libs.steemj.base.models.operations.Operation;
@@ -92,6 +94,7 @@ public class FarHorizonsApp implements Runnable {
 
 	private static final String DIV_PULL_RIGHT_START = "<div class='pull-right' style='float:right;padding:1rem;max-width:50%;'>";
 
+	@SuppressWarnings("unused")
 	private static final String DIV_PULL_LEFT_START = "<div class='pull-left' style='float:left;padding:1rem;max-width:50%;'>";
 
 	private static final TimeZone EST5EDT = TimeZone.getTimeZone("EST5EDT");
@@ -390,8 +393,8 @@ public class FarHorizonsApp implements Runnable {
 			try {
 				System.out.println("Upvoting: " + votingPower + "%");
 				System.out.println(article.getTitle());
+				waitCheckBeforeReplying(steemJ);
 				steemJ.vote(botAccount, article.getPermlink(), (short) 100);
-				sleep(3500);
 			} catch (Exception e) {
 				// ignore any up vote errors
 				System.err.println("Error on up vote. IGNORED.");
@@ -707,6 +710,7 @@ public class FarHorizonsApp implements Runnable {
 		while (true) {
 			try {
 				System.out.println("POSTING: " + title);
+				waitCheckBeforePosting(steemJ);
 				steemJ.createPost(title, payoutHtml, tags, MIME_HTML, defaultMetadata);
 				return;
 			} catch (Exception e) {
@@ -1170,6 +1174,7 @@ public class FarHorizonsApp implements Runnable {
 		while (true) {
 			try {
 				System.out.println("POSTING: " + info.getTitle());
+				waitCheckBeforePosting(steemJ);
 				steemJ.createPost(info.getTitle(), info.getHtml(), tags, MIME_HTML, defaultMetadata);
 				return;
 			} catch (Exception e) {
@@ -1522,63 +1527,6 @@ public class FarHorizonsApp implements Runnable {
 		return "'" + arg.replace("'", "'\\''") + "'";
 	}
 
-	@SuppressWarnings("unused")
-	private void markGameStarted(String parentAuthor, Permlink permlink, String newTurnPermlink, Set<String> tags) {
-		while (true) {
-			sleep(25l * 1000l); // 25 seconds
-			try {
-				steemJ.createComment(new AccountName(parentAuthor), permlink,
-						"<html><h1>GAME STARTED!</h1>[<a href='https://steemit.com/far-horizons/@" + accountName + "/"
-								+ newTurnPermlink + "' target='_blank'>"
-								+ StringEscapeUtils.escapeHtml4(newTurnPermlink) + "</a>]</html>",
-						tags.toArray(new String[0]), MIME_HTML, defaultMetadata);
-				System.out.println("GAME START.");
-				return;
-			} catch (SteemCommunicationException | SteemResponseException | SteemInvalidTransactionException e) {
-				System.err.println("Posting error. Sleeping 25 seconds.");
-			}
-		}
-	}
-
-	// markGameComplete
-	@SuppressWarnings("unused")
-	private void markGameComplete(String parentAuthor, Permlink parentPermlink, String gameCompleteLink,
-			Set<String> tags) {
-		while (true) {
-			sleep(25l * 1000l);// 25 seconds
-			try {
-				String gameCompleteHtml = "<html><h3>GAME COMPLETE!</h3>PLAYER STATS:" //
-						+ " [<a href='https://steemit.com/far-horizons/@" + accountName + "/" + gameCompleteLink
-						+ "' target='_blank'>" + basicEscape(gameCompleteLink) + "</a>]</html>";
-				steemJ.createComment(new AccountName(parentAuthor), parentPermlink, gameCompleteHtml,
-						tags.toArray(new String[0]), MIME_HTML, defaultMetadata);
-				System.out.println("GAME COMPLETE! [" + parentPermlink.getLink() + "]");
-				return;
-			} catch (SteemCommunicationException | SteemResponseException | SteemInvalidTransactionException e) {
-				System.err.println("Posting error. Retry in 25 seconds. [" + parentPermlink.getLink() + "]");
-			}
-		}
-	}
-
-	@SuppressWarnings("unused")
-	private void markTurnComplete(String parentAuthor, Permlink parentPermlink, String newTurnPermlink,
-			Set<String> tags) {
-		while (true) {
-			sleep(25l * 1000l);// 25 seconds
-			try {
-				steemJ.createComment(new AccountName(parentAuthor), parentPermlink,
-						"<html>" + "<h4>@" + parentAuthor + "</h4>" + "<h3>TURN COMPLETE!</h3>RESULTS:" //
-								+ " [<a href='https://steemit.com/far-horizons/@" + accountName + "/" + newTurnPermlink
-								+ "' target='_blank'>" + basicEscape(newTurnPermlink) + "</a>]</html>",
-						tags.toArray(new String[0]), MIME_HTML, defaultMetadata);
-				System.out.println("TURN COMPLETE! [" + parentPermlink.getLink() + "]");
-				return;
-			} catch (SteemCommunicationException | SteemResponseException | SteemInvalidTransactionException e) {
-				System.err.println("Posting error. Retry in 25 seconds. [" + parentPermlink.getLink() + "]");
-			}
-		}
-	}
-
 	private void postGameMaps(File gameDir, Permlink parentPermlink) {
 		String mapImagesHtml = getMapImagesHtml(gameDir);
 		if (mapImagesHtml.isEmpty()) {
@@ -1594,6 +1542,7 @@ public class FarHorizonsApp implements Runnable {
 			sleep(25l * 1000l);// 25 seconds
 			try {
 				String[] tags = getGameTurnTags(gameDir);
+				waitCheckBeforeReplying(steemJ);
 				steemJ.createComment(botAccount, parentPermlink, sb.toString(), tags, MIME_HTML, defaultMetadata);
 				System.out.println("MAPS POSTED! [" + parentPermlink.getLink() + "]");
 				return;
@@ -2241,6 +2190,7 @@ public class FarHorizonsApp implements Runnable {
 			doPost: while (true) {
 				sleep(25l * 1000l);// 25 seconds
 				try {
+					waitCheckBeforeReplying(steemJ);
 					steemJ.createComment(parentAuthor, parentPermlink, stat, tags, MIME_HTML, defaultMetadata);
 					break doPost;
 				} catch (SteemCommunicationException | SteemResponseException | SteemInvalidTransactionException e) {
@@ -2281,6 +2231,7 @@ public class FarHorizonsApp implements Runnable {
 			try {
 				System.out.println("POSTING: " + title + " ("
 						+ gameCompleteResultsHtml.getBytes(StandardCharsets.UTF_8).length + " bytes)");
+				waitCheckBeforePosting(steemJ);
 				CommentOperation posted = steemJ.createPost(title, gameCompleteResultsHtml, tags, MIME_HTML,
 						defaultMetadata);
 				parentPermlink = posted.getPermlink();
@@ -2450,10 +2401,12 @@ public class FarHorizonsApp implements Runnable {
 				System.out.println("POSTING: " + title + " (" + turnResultsHtml.getBytes(StandardCharsets.UTF_8).length
 						+ " bytes)");
 				if (isUpdate) {
+					waitCheckBeforePosting(steemJ);
 					CommentOperation posted = steemJ.updatePost(permlink, title, //
 							turnResultsHtml, tags, MIME_HTML, metadata);
 					return posted.getPermlink().getLink();
 				}
+				waitCheckBeforePosting(steemJ);
 				CommentOperation posted = steemJ.createPost(title, //
 						turnResultsHtml, tags, MIME_HTML, metadata);
 				return posted.getPermlink().getLink();
@@ -2519,25 +2472,68 @@ public class FarHorizonsApp implements Runnable {
 			return null;
 		}
 		compressed = basicUnescape(compressed);
-		String tmp = null;
 		try {
-			tmp = LZSEncoding.decompressFromBase64(compressed);
+			return LZSEncoding.decompressFromBase64(compressed);
 		} catch (Exception e) {
 		}
-		if (tmp == null || tmp.trim().isEmpty()) {
-			try {
-				tmp = LZSEncoding.decompressFromUTF16(compressed);
-			} catch (Exception e) {
-				return null;
-			}
+		try {
+			return LZSEncoding.decompressFromUTF16(compressed);
+		} catch (Exception e) {
 		}
-		return tmp;
+		return null;
 	}
 
 	private static String compress(String uncompressed) {
 		if (uncompressed == null) {
 			return null;
 		}
-		return basicEscape(LZSEncoding.compressToBase64(basicUnescape(uncompressed)));
+		return basicEscape(LZSEncoding.compressToBase64(uncompressed));
+	}
+	
+	private static final NumberFormat NF = NumberFormat.getInstance();
+	private void waitCheckBeforePosting(SteemJ steemJ) throws SteemCommunicationException, SteemResponseException {
+		long FIVE_MINUTES = 1000l * 60l * 5l;
+		long EXTRA_SECOND = 1000l;
+		SteemJConfig config = SteemJConfig.getInstance();
+		AccountName account = config.getDefaultAccount();
+		while (true) {
+			List<ExtendedAccount> info = steemJ.getAccounts(Arrays.asList(account));
+			TimePointSec now = steemJ.getDynamicGlobalProperties().getTime();
+			TimePointSec lastPostTime = now;
+			for (ExtendedAccount e : info) {
+				lastPostTime = e.getLastRootPost();
+				break;
+			}
+			long since = now.getDateTimeAsTimestamp() - lastPostTime.getDateTimeAsTimestamp();
+			long sleepFor = FIVE_MINUTES + EXTRA_SECOND - since;
+			if (sleepFor < 0) {
+				return;
+			}
+			System.out.println("Last post was within 5 minutes. Sleeping " + NF.format(sleepFor / 60000f) + " minutes.");
+			sleep(sleepFor);
+		}
+	}
+
+	private void waitCheckBeforeReplying(SteemJ steemJ) throws SteemCommunicationException, SteemResponseException {
+		final long MIN_DELAY = 1000l * 3l;
+		final long EXTRA_DELAY = 1000l;
+		SteemJConfig config = SteemJConfig.getInstance();
+		AccountName account = config.getDefaultAccount();
+		while (true) {
+			List<ExtendedAccount> info = steemJ.getAccounts(Arrays.asList(account));
+			TimePointSec now = steemJ.getDynamicGlobalProperties().getTime();
+			TimePointSec lastPostTime = now;
+			for (ExtendedAccount e : info) {
+				lastPostTime = e.getLastPost();
+				break;
+			}
+			long since = now.getDateTimeAsTimestamp() - lastPostTime.getDateTimeAsTimestamp();
+			long sleepFor = MIN_DELAY + EXTRA_DELAY - since;
+			if (sleepFor < 0) {
+				return;
+			}
+			System.out.println("Last reply was within 3 seconds. Sleeping " + NF.format(sleepFor / 1000f) + " seconds.");
+			sleep(sleepFor);
+		}
 	}
 }
