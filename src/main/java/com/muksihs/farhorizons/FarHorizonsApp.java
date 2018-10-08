@@ -50,7 +50,6 @@ import eu.bittrade.libs.steemj.apis.follow.model.CommentBlogEntry;
 import eu.bittrade.libs.steemj.base.models.AccountName;
 import eu.bittrade.libs.steemj.base.models.AppliedOperation;
 import eu.bittrade.libs.steemj.base.models.Asset;
-import eu.bittrade.libs.steemj.base.models.DynamicGlobalProperty;
 import eu.bittrade.libs.steemj.base.models.ExtendedAccount;
 import eu.bittrade.libs.steemj.base.models.Permlink;
 import eu.bittrade.libs.steemj.base.models.SignedTransaction;
@@ -216,29 +215,6 @@ public class FarHorizonsApp implements Runnable {
 		steemJ = new FarHorizonsSteemJ();
 	}
 
-	//TODO: Remove all calls to this method.
-	@Deprecated
-	private void waitIfLowBandwidth() {
-		if (true)
-			return; // HF20 no longer uses bandwidth controls
-//		NumberFormat nf = NumberFormat.getInstance();
-//		nf.setMaximumFractionDigits(2);
-//		nf.setRoundingMode(RoundingMode.DOWN);
-//		String prev = "";
-//		while (isLowBandwidth()) {
-//			try {
-//				String available = nf.format((100d - 100d * getBandwidthUsedPercent()));
-//				if (!prev.equals(available)) {
-//					prev = available;
-//					System.err.println("Low bandwidth. Waiting. " + available + "%");
-//				}
-//				Thread.sleep(1000l * 30l);
-//			} catch (SteemCommunicationException | SteemResponseException | InterruptedException e) {
-//				System.err.println(e.getMessage());
-//			}
-//		}
-	}
-
 	private void processOptions() throws SteemCommunicationException, SteemResponseException, JsonParseException,
 			JsonMappingException, IOException, InterruptedException, SteemInvalidTransactionException {
 		Iterator<String> iArgs = Arrays.asList(args).iterator();
@@ -267,11 +243,6 @@ public class FarHorizonsApp implements Runnable {
 						"GAME JOIN DEADLINE: " + joinGameDeadline(new GregorianCalendar()).getTime().toString());
 				System.out.println("SUBMIT ORDERS DEADLINE: "
 						+ submitOrdersDeadline(new GregorianCalendar()).getTime().toString());
-				continue;
-			}
-			if (arg.equals("--report-bandwidth")) {
-				System.out.println("Bandwidth: "
-						+ NumberFormat.getInstance().format((100d - 100d * getBandwidthUsedPercent())) + "%");
 				continue;
 			}
 			if (arg.equals("--start-game")) {
@@ -415,7 +386,6 @@ public class FarHorizonsApp implements Runnable {
 					continue forBlogEntries;
 				}
 			}
-			waitIfLowBandwidth();
 			// up vote this post. it has other votes already and we haven't up voted it yet.
 			try {
 				System.out.println("Upvoting: " + votingPower + "%");
@@ -475,7 +445,6 @@ public class FarHorizonsApp implements Runnable {
 	private void doGamePayouts()
 			throws SteemCommunicationException, SteemResponseException, SteemInvalidTransactionException,
 			JsonParseException, JsonMappingException, IOException, InterruptedException {
-		waitIfLowBandwidth();
 		steemJ.claimRewards();
 		Map<Integer, AppliedOperation> history = steemJ.getAccountHistory(botAccount, -1, 1000);
 		Set<String> alreadyPaid = new HashSet<>();
@@ -737,7 +706,6 @@ public class FarHorizonsApp implements Runnable {
 
 		while (true) {
 			try {
-				waitIfLowBandwidth();
 				System.out.println("POSTING: " + title);
 				steemJ.createPost(title, payoutHtml, tags, MIME_HTML, defaultMetadata);
 				return;
@@ -760,7 +728,6 @@ public class FarHorizonsApp implements Runnable {
 
 	private void doSteemOps(List<Operation> operations)
 			throws SteemCommunicationException, SteemResponseException, SteemInvalidTransactionException {
-		waitIfLowBandwidth();
 		SignedTransaction signedTransaction = new SignedTransaction(
 				steemJ.getDynamicGlobalProperties().getHeadBlockId(), operations, null);
 		signedTransaction.sign();
@@ -1131,13 +1098,12 @@ public class FarHorizonsApp implements Runnable {
 				// }
 				FileUtils.touch(semGameComplete);
 			} else {
-				@SuppressWarnings("unused")
 				String newTurnPermlink = postTurnResults(gameDir);
-				 postGameMaps(gameDir, new Permlink(newTurnPermlink));
-//				 for (String player : playerPermlinks.keySet()) {
-//				 Permlink playerPermlink = playerPermlinks.get(player);
-//				 markTurnComplete(player, playerPermlink, newTurnPermlink, tags);
-//				 }
+				postGameMaps(gameDir, new Permlink(newTurnPermlink));
+				// for (String player : playerPermlinks.keySet()) {
+				// Permlink playerPermlink = playerPermlinks.get(player);
+				// markTurnComplete(player, playerPermlink, newTurnPermlink, tags);
+				// }
 			}
 		}
 	}
@@ -1202,7 +1168,6 @@ public class FarHorizonsApp implements Runnable {
 		tags[3] = "new-game";
 		tags[4] = info.getGameDir().getName();
 		while (true) {
-			waitIfLowBandwidth();
 			try {
 				System.out.println("POSTING: " + info.getTitle());
 				steemJ.createPost(info.getTitle(), info.getHtml(), tags, MIME_HTML, defaultMetadata);
@@ -1560,7 +1525,6 @@ public class FarHorizonsApp implements Runnable {
 	@SuppressWarnings("unused")
 	private void markGameStarted(String parentAuthor, Permlink permlink, String newTurnPermlink, Set<String> tags) {
 		while (true) {
-			waitIfLowBandwidth();
 			sleep(25l * 1000l); // 25 seconds
 			try {
 				steemJ.createComment(new AccountName(parentAuthor), permlink,
@@ -1581,7 +1545,6 @@ public class FarHorizonsApp implements Runnable {
 	private void markGameComplete(String parentAuthor, Permlink parentPermlink, String gameCompleteLink,
 			Set<String> tags) {
 		while (true) {
-			waitIfLowBandwidth();
 			sleep(25l * 1000l);// 25 seconds
 			try {
 				String gameCompleteHtml = "<html><h3>GAME COMPLETE!</h3>PLAYER STATS:" //
@@ -1601,7 +1564,6 @@ public class FarHorizonsApp implements Runnable {
 	private void markTurnComplete(String parentAuthor, Permlink parentPermlink, String newTurnPermlink,
 			Set<String> tags) {
 		while (true) {
-			waitIfLowBandwidth();
 			sleep(25l * 1000l);// 25 seconds
 			try {
 				steemJ.createComment(new AccountName(parentAuthor), parentPermlink,
@@ -1617,7 +1579,6 @@ public class FarHorizonsApp implements Runnable {
 		}
 	}
 
-	@SuppressWarnings("unused")
 	private void postGameMaps(File gameDir, Permlink parentPermlink) {
 		String mapImagesHtml = getMapImagesHtml(gameDir);
 		if (mapImagesHtml.isEmpty()) {
@@ -1630,12 +1591,10 @@ public class FarHorizonsApp implements Runnable {
 		sb.append(mapImagesHtml);
 		sb.append("</html>");
 		while (true) {
-			waitIfLowBandwidth();
 			sleep(25l * 1000l);// 25 seconds
 			try {
 				String[] tags = getGameTurnTags(gameDir);
-				steemJ.createComment(botAccount, parentPermlink, sb.toString(), tags, MIME_HTML,
-						defaultMetadata);
+				steemJ.createComment(botAccount, parentPermlink, sb.toString(), tags, MIME_HTML, defaultMetadata);
 				System.out.println("MAPS POSTED! [" + parentPermlink.getLink() + "]");
 				return;
 			} catch (SteemCommunicationException | SteemResponseException | SteemInvalidTransactionException e) {
@@ -2212,7 +2171,7 @@ public class FarHorizonsApp implements Runnable {
 	private List<String> getMapUrls(File gameDir) {
 		File mapUrlsFile = new File(gameDir, "steem-data/map-urls.txt");
 		Set<String> mapUrlsList = new HashSet<>();
-		String parentFolder = "/Far-Horizons-Steem/Maps/"+gameDir.getName()+"/";
+		String parentFolder = "/Far-Horizons-Steem/Maps/" + gameDir.getName() + "/";
 		try (IpfsFolder ipfs = new IpfsFolder(parentFolder)) {
 			for (String map : MAP_LIST) {
 				File imgFile = new File(gameDir, "maps/" + map);
@@ -2229,11 +2188,11 @@ public class FarHorizonsApp implements Runnable {
 				return new ArrayList<>();
 			}
 			Random r = new Random();
-			for (String map: MAP_LIST) {
+			for (String map : MAP_LIST) {
 				if (r.nextBoolean()) {
-					mapUrlsList.add("https://cloudflare-ipfs.com/ipfs/"+hash+parentFolder+map);
+					mapUrlsList.add("https://cloudflare-ipfs.com/ipfs/" + hash + parentFolder + map);
 				} else {
-					mapUrlsList.add("https://ipfs.io/ipfs/"+hash+parentFolder+map);
+					mapUrlsList.add("https://ipfs.io/ipfs/" + hash + parentFolder + map);
 				}
 			}
 		} catch (Exception e) {
@@ -2275,11 +2234,11 @@ public class FarHorizonsApp implements Runnable {
 
 	private void postGameCompleteDetails(AccountName parentAuthor, Permlink parentPermlink, File gameDir, String tn,
 			String[] tags) throws IOException {
-		if (true) return; //this is an RCs killer, TODO: switch to IPFS based solution
+		if (true)
+			return; // this is an RCs killer, TODO: switch to IPFS based solution
 		List<String> stats = getUncompressedSpeciesStatus(gameDir, tn);
 		for (String stat : stats) {
 			doPost: while (true) {
-				waitIfLowBandwidth();
 				sleep(25l * 1000l);// 25 seconds
 				try {
 					steemJ.createComment(parentAuthor, parentPermlink, stat, tags, MIME_HTML, defaultMetadata);
@@ -2319,7 +2278,6 @@ public class FarHorizonsApp implements Runnable {
 		Permlink parentPermlink;
 		AccountName parentAuthor;
 		doPost: while (true) {
-			waitIfLowBandwidth();
 			try {
 				System.out.println("POSTING: " + title + " ("
 						+ gameCompleteResultsHtml.getBytes(StandardCharsets.UTF_8).length + " bytes)");
@@ -2489,7 +2447,6 @@ public class FarHorizonsApp implements Runnable {
 				sleep(5l * 60l * 1000l);
 			}
 			try {
-				waitIfLowBandwidth();
 				System.out.println("POSTING: " + title + " (" + turnResultsHtml.getBytes(StandardCharsets.UTF_8).length
 						+ " bytes)");
 				if (isUpdate) {
@@ -2540,77 +2497,6 @@ public class FarHorizonsApp implements Runnable {
 		String title = "Far Horizons Steem - New Player Signup! " + " - Game "
 				+ gameDir.getName().replaceAll("[^\\d]", "");
 		return title;
-	}
-
-	private double bandwidthRequiredPercent = 65d;
-
-	//TODO: Remove all calls to this method.
-	@Deprecated
-	private boolean isLowBandwidth() {
-		try {
-			double bandwidthUsed = (double) Math.ceil(10000d * getBandwidthUsedPercent()) / 100d;
-			if ((100d - bandwidthUsed) < bandwidthRequiredPercent) {
-				return true;
-			}
-			return false;
-		} catch (SteemCommunicationException | SteemResponseException e) {
-			return true;
-		}
-	}
-
-	private double getBandwidthUsedPercent() throws SteemCommunicationException, SteemResponseException {
-		double MILLION = 1000000d;
-		double STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS = 60 * 60 * 24 * 7;
-		ExtendedAccount extendedAccount = getExtendedAccount();
-		DynamicGlobalProperty dynamicGlobalProperties = null;
-		for (int retries = 0; retries < 10; retries++) {
-			try {
-				dynamicGlobalProperties = steemJ.getDynamicGlobalProperties();
-			} catch (SteemResponseException e) {
-				if (retries == 9) {
-					throw e;
-				}
-				sleep(500);
-			}
-		}
-		double vestingShares = extendedAccount.getVestingShares().getAmount();
-		double receivedVestingShares = extendedAccount.getReceivedVestingShares().getAmount();
-		double totalVestingShares = dynamicGlobalProperties.getTotalVestingShares().getAmount();
-		double maxVirtualBandwidth = Double
-				.valueOf(dynamicGlobalProperties.getMaxVirtualBandwidth().replaceAll(" .*", ""));
-		double averageBandwidth = extendedAccount.getAverageBandwidth();
-		double deltaTimeSecs = Math.round(
-				new Date().getTime() - extendedAccount.getLastBandwidthUpdate().getDateTimeAsDate().getTime()) / 1000d;
-		double bandwidthAllocated = (maxVirtualBandwidth * (vestingShares + receivedVestingShares))
-				/ totalVestingShares;
-		bandwidthAllocated = Math.round(bandwidthAllocated / MILLION);
-		double newBandwidth = 0d;
-		if (deltaTimeSecs < STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS) {
-			newBandwidth = (((STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS - deltaTimeSecs) * averageBandwidth)
-					/ STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS);
-			newBandwidth = Math.round(newBandwidth / MILLION);
-		}
-		double bandwidthUsedPercent = newBandwidth / bandwidthAllocated;
-		return bandwidthUsedPercent;
-	}
-
-	private ExtendedAccount getExtendedAccount() throws SteemCommunicationException, SteemResponseException {
-		for (int retries = 0; retries < 10; retries++) {
-			try {
-				List<ExtendedAccount> accounts = steemJ.getAccounts(Arrays.asList(botAccount));
-				if (accounts.isEmpty()) {
-					return null;
-				}
-				return accounts.iterator().next();
-			} catch (Exception e) {
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e1) {
-				}
-
-			}
-		}
-		return null;
 	}
 
 	private static BigDecimal minRcsToRun(AccountName botAccount) {
