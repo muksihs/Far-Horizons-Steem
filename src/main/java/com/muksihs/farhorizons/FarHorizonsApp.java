@@ -130,19 +130,23 @@ public class FarHorizonsApp implements Runnable {
 			System.err.println(e.getMessage());
 			return true;
 		}
-		ArrayList<RcAccount> rcAccounts = rcs.getRcAccounts();
+		List<RcAccount> rcAccounts = rcs.getRcAccounts();
 		if (rcAccounts.isEmpty()) {
 			return true;
 		}
+		BigDecimal minRcsToRun = minRcsToRun(botAccount);
 		for (RcAccount rc : rcAccounts) {
-			BigDecimal minRcsToRun = minRcsToRun(botAccount);
-			if (rc.getEstimatedMana().compareTo(minRcsToRun) > 0) {
-				return false;
+			if (!rc.getAccount().equals(botAccount.getName())) {
+				continue;
 			}
-			System.out.println("--- Available RCs " + NumberFormat.getInstance().format(rc.getEstimatedMana()) + " < "
+			BigDecimal estimatedMana = rc.getEstimatedMana();
+			if (minRcsToRun.compareTo(estimatedMana) < 0) {
+				return true;
+			}
+			System.out.println("--- Available RCs " + NumberFormat.getInstance().format(estimatedMana) + " < "
 					+ NumberFormat.getInstance().format(minRcsToRun));
 		}
-		return true;
+		return false;
 	}
 
 	private void loadSteemAccountInformation() throws FileNotFoundException, IOException {
