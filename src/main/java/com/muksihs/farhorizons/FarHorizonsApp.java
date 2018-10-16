@@ -13,6 +13,7 @@ import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -399,6 +400,13 @@ public class FarHorizonsApp implements Runnable {
 				if (vote.getVoter().equals(botAccount)) {
 					continue forBlogEntries;
 				}
+			}
+			GregorianCalendar sevenDaysAgo = new GregorianCalendar(EST5EDT);
+			sevenDaysAgo.add(Calendar.DAY_OF_YEAR, -7);
+			sevenDaysAgo.add(Calendar.MINUTE, 5);//add 5 minutes as a safety measure
+			//if too old, skip it, as the vote will be wasted
+			if (article.getCreated().getDateTimeAsDate().before(sevenDaysAgo.getTime())) {
+				continue;
 			}
 			// up vote this post. it has other votes already and we haven't up voted it yet.
 			try {
