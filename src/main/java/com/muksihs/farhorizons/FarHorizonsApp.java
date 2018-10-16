@@ -340,6 +340,9 @@ public class FarHorizonsApp implements Runnable {
 				break;
 			}
 		}
+		//sort oldest to newest by entry id
+		Collections.sort(entriesForUpvote, (a,b)->a.getEntryId()-b.getEntryId());
+		
 		forBlogEntries: for (BlogEntry entry : entriesForUpvote) {
 			// if not by game master, SKIP
 			if (!entry.getAuthor().equals(botAccount)) {
