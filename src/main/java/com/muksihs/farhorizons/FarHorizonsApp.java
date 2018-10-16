@@ -306,7 +306,10 @@ public class FarHorizonsApp implements Runnable {
 					continue;
 				}
 				doGamePayouts();
+				continue;
 			}
+			
+			System.err.println("UNKNOWN OPTION: "+arg);
 		}
 	}
 
