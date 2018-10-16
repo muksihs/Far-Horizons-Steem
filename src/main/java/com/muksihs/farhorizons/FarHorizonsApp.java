@@ -885,7 +885,6 @@ public class FarHorizonsApp implements Runnable {
 				continue gameScan;
 			}
 			if (!gameTurnComment.getAuthor().equals(botAccount)) {
-				System.err.println("Reblog: "+gameTurnComment.getAuthor().getName());
 				continue gameScan;
 			}
 
@@ -893,11 +892,9 @@ public class FarHorizonsApp implements Runnable {
 					CommentMetadata.class);
 			Set<String> tags = new HashSet<>(Arrays.asList(metadata.getTags()));
 			if (!tags.contains("far-horizons")) {
-				System.err.println("Ignoring: "+gameTurnComment.getTitle());
 				continue gameScan;
 			}
 			if (tags.contains("new-game")) {
-				System.err.println("Ignoring: "+gameTurnComment.getTitle());
 				continue gameScan;
 			}
 			/*
