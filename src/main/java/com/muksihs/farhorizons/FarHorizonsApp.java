@@ -26,6 +26,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
@@ -562,7 +563,7 @@ public class FarHorizonsApp implements Runnable {
 			GregorianCalendar payoutDeadline = postPayoutDeadline(gameTurnPost.getCreated().getDateTimeAsDate());
 			// only pay players who actually played
 			List<Discussion> replies = steemJ.getContentReplies(botAccount, gameTurnPost.getPermlink());
-			Set<String> activePlayers = new HashSet<>();
+			Set<String> activePlayers = new TreeSet<>();
 			playersScan: for (Discussion playerReply : replies) {
 				String name = playerReply.getAuthor().getName();
 				String body = playerReply.getBody();
@@ -585,7 +586,7 @@ public class FarHorizonsApp implements Runnable {
 				activePlayers.add(name);
 			}
 			activePlayers.retainAll(registeredPlayers);
-			System.out.println("Active players: " + playerList.toString());
+			System.out.println("Active players: " + activePlayers.toString());
 			registeredPlayers = null; // make sure we don't use wrong set with a NPE!
 
 			Set<String> votingPlayers = new HashSet<>();
