@@ -122,7 +122,7 @@ public class FarHorizonsApp implements Runnable {
 		defaultMetadata.put("app", "FarHorizons/20180831-00");
 	}
 
-	public static boolean doRcAbortCheck(AccountName botAccount) {
+	public static boolean haveEnoughRcs(AccountName botAccount) {
 		RcAccounts rcs;
 		try {
 			rcs = SteemRcApi.getRc(botAccount);
@@ -145,6 +145,7 @@ public class FarHorizonsApp implements Runnable {
 			}
 			System.out.println("--- Available RCs " + NumberFormat.getInstance().format(estimatedMana) + " < "
 					+ NumberFormat.getInstance().format(minRcsToRun));
+			return false;
 		}
 		return false;
 	}
@@ -253,21 +254,21 @@ public class FarHorizonsApp implements Runnable {
 				continue;
 			}
 			if (arg.equals("--start-game")) {
-				if (doRcAbortCheck(botAccount)) {
+				if (!haveEnoughRcs(botAccount)) {
 					continue;
 				}
 				doProcessAnnounceReplies();
 				continue;
 			}
 			if (arg.equals("--upvote-check")) {
-				if (doRcAbortCheck(botAccount)) {
+				if (!haveEnoughRcs(botAccount)) {
 					continue;
 				}
 				doUpvoteCheck();
 				continue;
 			}
 			if (arg.equals("--announce-game")) {
-				if (doRcAbortCheck(botAccount)) {
+				if (!haveEnoughRcs(botAccount)) {
 					continue;
 				}
 				doAnnounceGamePost();
@@ -282,12 +283,12 @@ public class FarHorizonsApp implements Runnable {
 				continue;
 			}
 			if (arg.equals("--run-game")) {
-				if (doRcAbortCheck(botAccount)) {
+				if (!haveEnoughRcs(botAccount)) {
 					continue;
 				}
 				System.out.println("-> doRunGameTurn");
 				doRunGameTurn();
-				if (!doRcAbortCheck(botAccount)) {
+				if (haveEnoughRcs(botAccount)) {
 					System.out.println("-> doUpvoteCheck");
 					doUpvoteCheck();
 				}
@@ -300,11 +301,10 @@ public class FarHorizonsApp implements Runnable {
 			}
 
 			if (arg.equals("--payouts")) {
-				if (doRcAbortCheck(botAccount)) {
+				if (!haveEnoughRcs(botAccount)) {
 					continue;
 				}
 				doGamePayouts();
-				continue;
 			}
 		}
 	}
@@ -454,6 +454,7 @@ public class FarHorizonsApp implements Runnable {
 			JsonParseException, JsonMappingException, IOException, InterruptedException {
 		steemJ.claimRewards();
 		Map<Integer, AppliedOperation> history = steemJ.getAccountHistory(botAccount, -1, 1000);
+		System.out.println("ACCOUNT HISTORY SIZE: "+history.size());
 		Set<String> alreadyPaid = new HashSet<>();
 
 		ArrayList<Integer> keys = new ArrayList<>(history.keySet());
@@ -965,7 +966,7 @@ public class FarHorizonsApp implements Runnable {
 		 */
 		gameScan: for (CommentBlogEntry gameTurnEntry : activeGames) {
 
-			if (doRcAbortCheck(botAccount)) {
+			if (haveEnoughRcs(botAccount)) {
 				break gameScan;
 			}
 
