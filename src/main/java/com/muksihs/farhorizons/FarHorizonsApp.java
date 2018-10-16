@@ -457,7 +457,7 @@ public class FarHorizonsApp implements Runnable {
 		System.out.println("ACCOUNT HISTORY SIZE: "+history.size());
 		Set<String> alreadyPaid = new HashSet<>();
 
-		ArrayList<Integer> keys = new ArrayList<>(history.keySet());
+		List<Integer> keys = new ArrayList<>(history.keySet());
 		Collections.sort(keys); //oldest to newest
 
 		for (Integer key : keys) {
