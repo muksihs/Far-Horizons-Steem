@@ -879,21 +879,25 @@ public class FarHorizonsApp implements Runnable {
 		Collections.sort(entries, (a, b) -> b.getEntryId() - a.getEntryId());
 		gameScan: for (CommentBlogEntry gameTurnEntry : entries) {
 			// if not by game master, SKIP
-			if (gameTurnEntry.getComment() == null) {
+			Comment gameTurnComment = gameTurnEntry.getComment();
+			if (gameTurnComment == null) {
 				System.err.println("NULL Comment?");
 				continue gameScan;
 			}
-			if (!gameTurnEntry.getComment().getAuthor().equals(botAccount)) {
+			if (!gameTurnComment.getAuthor().equals(botAccount)) {
+				System.err.println("Reblog: "+gameTurnComment.getAuthor().getName());
 				continue gameScan;
 			}
 
-			CommentMetadata metadata = json.readValue(gameTurnEntry.getComment().getJsonMetadata(),
+			CommentMetadata metadata = json.readValue(gameTurnComment.getJsonMetadata(),
 					CommentMetadata.class);
 			Set<String> tags = new HashSet<>(Arrays.asList(metadata.getTags()));
 			if (!tags.contains("far-horizons")) {
+				System.err.println("Ignoring: "+gameTurnComment.getTitle());
 				continue gameScan;
 			}
 			if (tags.contains("new-game")) {
+				System.err.println("Ignoring: "+gameTurnComment.getTitle());
 				continue gameScan;
 			}
 			/*
@@ -912,6 +916,7 @@ public class FarHorizonsApp implements Runnable {
 				gameDir = new File(dataDir, tag);
 				if (!new File(gameDir, "galaxy.dat").exists()) {
 					already.add(tag);
+					System.err.println("Invalid game: "+gameTurnComment.getTitle());
 					continue gameScan;
 				}
 				already.add(tag);
@@ -923,12 +928,13 @@ public class FarHorizonsApp implements Runnable {
 			// make sure the post's turn number matches the game data turn number!
 			String turnNumber = getTurnNumber(gameDir);
 			FarHorizonsGameData farHorizonsGameData = metadata.getFarHorizonsGameData();
-			String gameTurnTitle = StringUtils.normalizeSpace(gameTurnEntry.getComment().getTitle());
+			String gameTurnTitle = StringUtils.normalizeSpace(gameTurnComment.getTitle());
 			if (farHorizonsGameData == null || farHorizonsGameData.getStartingTurnNumber() == null
 					|| farHorizonsGameData.getStartingTurnNumber().trim().isEmpty()) {
 				// Attempt to extract turn number from post title
 				String lcTitle = gameTurnTitle.toLowerCase();
 				if (lcTitle.contains("game complete")) {
+					System.err.println("Ignoring: "+gameTurnComment.getTitle());
 					continue gameScan;
 				}
 				if (!lcTitle.contains("turn")) {
@@ -980,7 +986,8 @@ public class FarHorizonsApp implements Runnable {
 		 */
 		gameScan: for (CommentBlogEntry gameTurnEntry : activeGames) {
 
-			if (haveEnoughRcs(botAccount)) {
+			if (!haveEnoughRcs(botAccount)) {
+				System.err.println("RCs dropped - skipping: "+gameTurnEntry.getComment().getTitle());
 				break gameScan;
 			}
 
