@@ -458,8 +458,7 @@ public class FarHorizonsApp implements Runnable {
 		Set<String> alreadyPaid = new HashSet<>();
 
 		ArrayList<Integer> keys = new ArrayList<>(history.keySet());
-		Collections.sort(keys);
-		Collections.reverse(keys);
+		Collections.sort(keys); //oldest to newest
 
 		for (Integer key : keys) {
 			AppliedOperation op = history.get(key);
